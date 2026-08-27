@@ -41,6 +41,16 @@ def build_jobs(settings: dict) -> list[dict[str, object]]:
             'interval_seconds': int(scheduler.get('ai_review_queue_every_seconds', 3600)),
         },
         {
+            'name': 'pre_ny_context_export',
+            'script': 'export_pre_ny_context.py',
+            'interval_seconds': int(scheduler.get('pre_ny_context_every_seconds', 3600)),
+        },
+        {
+            'name': 'pre_ny_review_import',
+            'script': 'import_pre_ny_review.py',
+            'interval_seconds': int(scheduler.get('pre_ny_import_every_seconds', 60)),
+        },
+        {
             'name': 'trigger_monitor',
             'script': 'run_trigger_monitor_once.py',
             'interval_seconds': int(scheduler['trigger_monitor_every_seconds']),

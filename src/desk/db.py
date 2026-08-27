@@ -388,6 +388,56 @@ CREATE TABLE IF NOT EXISTS shadow_ai_reviews (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(opportunity_id) REFERENCES opportunities(id)
 );
+
+CREATE TABLE IF NOT EXISTS pre_ny_runs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  generated_at TEXT NOT NULL,
+  session_status TEXT NOT NULL,
+  market_regime TEXT NOT NULL,
+  data_quality TEXT NOT NULL,
+  base_probability REAL,
+  bull_probability REAL,
+  bear_probability REAL,
+  scenario_map_json TEXT NOT NULL,
+  macro_context TEXT NOT NULL,
+  btc_context TEXT NOT NULL,
+  stocks_context TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  model TEXT NOT NULL,
+  raw_output_json TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS pre_ny_plans (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  run_id INTEGER NOT NULL,
+  symbol TEXT NOT NULL,
+  instrument TEXT NOT NULL,
+  direction TEXT NOT NULL CHECK(direction IN ('LONG','SHORT','NONE')),
+  status TEXT NOT NULL CHECK(status IN ('READY','WAIT','MISSED','INVALIDATED','NO_TRADE')),
+  setup_type TEXT NOT NULL,
+  scenario TEXT NOT NULL,
+  plan_label TEXT NOT NULL,
+  entry_low REAL,
+  entry_high REAL,
+  technical_invalidation REAL,
+  stop_loss REAL,
+  tp1 REAL,
+  tp2 REAL,
+  primary_tp REAL,
+  rr_primary REAL,
+  score REAL,
+  timing_action TEXT NOT NULL,
+  trigger TEXT NOT NULL,
+  cancel_if_json TEXT NOT NULL,
+  thesis TEXT NOT NULL,
+  risks_json TEXT NOT NULL,
+  sources_json TEXT NOT NULL,
+  raw_plan_json TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(run_id) REFERENCES pre_ny_runs(id)
+);
+CREATE INDEX IF NOT EXISTS idx_pre_ny_plans_run ON pre_ny_plans(run_id);
 """
 
 
