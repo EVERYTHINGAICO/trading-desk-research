@@ -178,6 +178,53 @@ def main() -> None:
              trigger_price,observed_price,action,exchange_order_id,status,error
       FROM demo_manual_protection_events ORDER BY id DESC LIMIT 100
     """)
+    watcher_audit = []
+    if live.get('connected'):
+        for position in live.get('unprotected_positions', []):
+            eligible = [
+                item for item in intents
+                if item['symbol'] == position['symbol']
+                and item['status'] in {'PROTECTION_REQUIRED', 'PROTECTED'}
+                and item['exchange_order_id']
+            ]
+            eligible.sort(key=lambda item: item['id'])
+            prior_events = [
+                event for event in manual_events
+                if event['symbol'] == position['symbol'] and event['status'] in {'SENT', 'CONFIRMED'}
+            ]
+            if not eligible:
+                coverage = 'NOT_WATCHED_NO_ELIGIBLE_INTENT'
+            elif len(eligible) > 1:
+                coverage = 'WATCHED_MULTIPLE_LEVEL_RISK'
+            else:
+                coverage = 'WATCHED_SINGLE'
+            if eligible and prior_events:
+                coverage += '_HISTORICAL_DEDUPE_RISK'
+            watcher_audit.append({
+                'symbol': position['symbol'],
+                'coverage': coverage,
+                'eligible_intent_count': len(eligible),
+                'selected_intent_id': eligible[0]['id'] if eligible else None,
+                'selected_opportunity_id': eligible[0]['opportunity_id'] if eligible else None,
+                'selected_status': eligible[0]['status'] if eligible else None,
+                'selected_stop_price': eligible[0]['stop_price'] if eligible else None,
+                'selected_primary_tp': eligible[0]['primary_tp'] if eligible else None,
+                'newest_intent_id': eligible[-1]['id'] if eligible else None,
+                'newest_stop_price': eligible[-1]['stop_price'] if eligible else None,
+                'newest_primary_tp': eligible[-1]['primary_tp'] if eligible else None,
+                'historical_manual_events': prior_events,
+                'watcher_will_act': bool(eligible),
+                'risk_note': (
+                    'Watcher ignores this live position because no PROTECTION_REQUIRED/PROTECTED intent is eligible.' if not eligible
+                    else 'Watcher iterates oldest intent first; levels may not represent the current aggregate position.' if len(eligible) > 1
+                    else 'A prior manual event can suppress another same-symbol trigger because dedupe has no position lifecycle key.' if prior_events
+                    else 'Watcher has one eligible intent and no historical dedupe conflict.'
+                ),
+            })
+        live['manual_watcher_audit'] = watcher_audit
+        live['watcher_not_covered'] = [item for item in watcher_audit if not item['watcher_will_act']]
+        live['watcher_ambiguous'] = [item for item in watcher_audit if item['eligible_intent_count'] > 1]
+        live['watcher_dedupe_risk'] = [item for item in watcher_audit if item['historical_manual_events']]
     pre_ny = rows(conn, """
       SELECT r.id,r.generated_at,r.session_status,r.market_regime,r.data_quality,
              r.base_probability,r.bull_probability,r.bear_probability,
@@ -259,6 +306,15 @@ def main() -> None:
         f'- Open exchange orders: {len(orders)}\n',
         f"- Orphan open orders: {len(live.get('orphan_open_orders', []))}\n",
         f"- Obsolete-order candidates: {len(live.get('obsolete_order_candidates', []))}\n\n",
+        f"- Unprotected positions not watched: {len(live.get('watcher_not_covered', []))}\n",
+        f"- Watcher multiple-level risks: {len(live.get('watcher_ambiguous', []))}\n",
+        f"- Watcher historical-dedupe risks: {len(live.get('watcher_dedupe_risk', []))}\n\n",
+        '### Manual watcher coverage\n',
+    ])
+    for audit in live.get('manual_watcher_audit', []):
+        lines.append(f"- {audit['symbol']}: {audit['coverage']}; eligible={audit['eligible_intent_count']}; selected_intent={audit['selected_intent_id']}; stop={audit['selected_stop_price']}; primary_tp={audit['selected_primary_tp']}; note={audit['risk_note']}\n")
+    lines.extend([
+        '\n',
         '### Positions\n',
     ])
     for position in positions:
