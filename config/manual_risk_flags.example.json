@@ -1,0 +1,20 @@
+{
+  "global": [
+    {
+      "status": "watch",
+      "reason": "Example macro watch window",
+      "effective_from": "2026-08-25T00:00:00Z",
+      "effective_to": "2026-08-25T06:00:00Z"
+    }
+  ],
+  "symbols": {
+    "BTCUSDT": [
+      {
+        "status": "block",
+        "reason": "Example symbol-specific structural/news event",
+        "effective_from": "2026-08-25T00:00:00Z",
+        "effective_to": "2026-08-25T01:00:00Z"
+      }
+    ]
+  }
+}
