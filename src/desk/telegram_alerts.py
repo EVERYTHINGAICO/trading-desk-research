@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sqlite3
 from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -25,7 +26,10 @@ def notify_error(payload: dict, *, error_id: int | None = None, conn=None) -> No
     if not token or not chat_id:
         if conn:
             from .db import insert_alert_delivery
-            insert_alert_delivery(conn, {'error_id': error_id, 'channel': 'telegram', 'destination': chat_id, 'status': 'SKIPPED', 'error': 'missing token or chat id'})
+            try:
+                insert_alert_delivery(conn, {'error_id': error_id, 'channel': 'telegram', 'destination': chat_id, 'status': 'SKIPPED', 'error': 'missing token or chat id'})
+            except sqlite3.OperationalError:
+                pass
         return
     text = "\n".join([
         "ERROR BINANCE DEMO",
@@ -44,4 +48,7 @@ def notify_error(payload: dict, *, error_id: int | None = None, conn=None) -> No
         status, error = 'FAILED', str(exc)
     if conn:
         from .db import insert_alert_delivery
-        insert_alert_delivery(conn, {'error_id': error_id, 'channel': 'telegram', 'destination': chat_id, 'status': status, 'error': error})
+        try:
+            insert_alert_delivery(conn, {'error_id': error_id, 'channel': 'telegram', 'destination': chat_id, 'status': status, 'error': error})
+        except sqlite3.OperationalError:
+            pass

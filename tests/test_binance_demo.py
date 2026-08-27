@@ -7,6 +7,9 @@ from desk.binance_demo import SymbolFilters, place_native_protections
 from desk.db import record_demo_exception
 import sqlite3
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+from reconcile_binance_demo import should_cancel_entry
+
 
 class FakeClient:
     def __init__(self):
@@ -44,3 +47,11 @@ def test_record_demo_exception_preserves_error_without_blocking():
     record_demo_exception(conn, {"symbol": "BTCUSDT", "error_type": "MONITOR", "action_taken": "MONITOR_ONLY"}, RuntimeError("read failed"), block_asset=False)
     assert conn.execute("SELECT error_message,asset_blocked FROM demo_order_errors").fetchone() == ("read failed", 0)
     assert conn.execute("SELECT count(*) FROM demo_asset_blocks").fetchone()[0] == 0
+
+
+def test_pending_entry_cancels_for_terminal_setup_regardless_of_local_intent_status():
+    for state in ("PASS", "INVALIDATED", "MISSED", "CLOSED_WIN"):
+        assert should_cancel_entry(state, "NEW")
+        assert should_cancel_entry(state, "PARTIALLY_FILLED")
+    assert not should_cancel_entry("ENTRY_READY", "NEW")
+    assert not should_cancel_entry("PASS", "FILLED")

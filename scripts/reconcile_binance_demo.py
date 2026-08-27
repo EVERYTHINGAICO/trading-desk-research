@@ -15,6 +15,13 @@ from desk.db import connect, create_reconciliation_run, finish_reconciliation_ru
 from desk.telegram_alerts import notify_error
 
 
+TERMINAL_SETUP_STATES = {'PASS', 'INVALIDATED', 'MISSED', 'CLOSED_WIN'}
+
+
+def should_cancel_entry(opportunity_state: str | None, exchange_status: str | None) -> bool:
+    return opportunity_state in TERMINAL_SETUP_STATES and exchange_status in {'NEW', 'PARTIALLY_FILLED'}
+
+
 def main() -> None:
     settings = load_settings()
     conn = connect(project_root() / settings['db_path'])
@@ -57,9 +64,22 @@ def main() -> None:
         client_order_id = order.get('clientOrderId', '')
         if not (client_order_id.startswith('shadow-demo-') or client_order_id.startswith('sd-')) or not client_order_id.endswith('-entry'):
             continue
-        existing = conn.execute("SELECT 1 FROM demo_order_intents WHERE client_order_id=?", (client_order_id,)).fetchone()
+        existing = conn.execute("""
+          SELECT i.*,o.state AS opportunity_state
+          FROM demo_order_intents i JOIN opportunities o ON o.id=i.opportunity_id
+          WHERE i.client_order_id=?
+        """, (client_order_id,)).fetchone()
         if existing:
             counts['matched'] += 1
+            if should_cancel_entry(existing['opportunity_state'], order.get('status')):
+                client.cancel(order['symbol'], int(order['orderId']))
+                payload = json.loads(existing['payload_json'])
+                payload.update({
+                    'status': 'CANCELED_SETUP_INVALIDATED',
+                    'cancel_reason': f"setup_{existing['opportunity_state'].lower()}",
+                    'reconciled_at': datetime.now(timezone.utc).isoformat(),
+                })
+                update_demo_intent(conn, existing['client_order_id'], payload)
             continue
         counts['orphans'] += 1
         payload = {'symbol': order['symbol'], 'client_order_id': client_order_id, 'exchange_order_id': str(order['orderId']), 'status': 'ORPHANED', 'error': 'Imported open Binance order without local intent'}
@@ -83,7 +103,7 @@ def main() -> None:
             current = client.order_status(row['symbol'], int(row['exchange_order_id'])) if row['exchange_order_id'] else None
             if current:
                 upsert_exchange_order(conn, current)
-            if row['opportunity_state'] in {'INVALIDATED', 'MISSED', 'CLOSED_WIN'} and current and current.get('status') in {'NEW', 'PARTIALLY_FILLED'}:
+            if should_cancel_entry(row['opportunity_state'], current.get('status') if current else None):
                 client.cancel(row['symbol'], int(row['exchange_order_id']))
                 payload.update({'status': 'CANCELED_SETUP_INVALIDATED', 'reconciled_at': datetime.now(timezone.utc).isoformat()})
                 update_demo_intent(conn, row['client_order_id'], payload)
