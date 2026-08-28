@@ -10,7 +10,7 @@ This matrix is the controlled backlog. Items are implemented in shadow first and
 | SHORT calculations and direction | Missing | Add `LONG/SHORT/NONE` model and short-only shadow replay |
 | Crypto capitulation scanner | Partial | Complete appendix-specific evidence and confirmation rules |
 | Binance PRE_NY | Missing | Independent shadow run type, scenarios, journal, and metrics |
-| Quality stock dip | Missing | Independent shadow data sources, fundamentals, journal, and metrics |
+| Quality stock dip | Implemented in isolated shadow | Accumulate sample, improve structured cash/fundamental sources, and never promote automatically |
 | Sunday global reopen | Missing | Independent shadow scenarios, sessions, journal, and metrics |
 | PRE_CLOSE | Missing/paused by authority | Preserve as disabled until explicitly reactivated |
 | BTC 15m/1h/4h/1d context | Partial | Add structure, OI/positioning, freshness, and regime diagnostics |

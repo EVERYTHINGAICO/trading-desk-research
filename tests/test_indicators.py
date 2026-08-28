@@ -1,6 +1,7 @@
 import unittest
 
-from src.desk.indicators import bollinger, ema, macd, rsi
+from src.desk.indicators import bollinger, ema, kdj, macd, psar, rsi, supertrend
+from src.desk.types import Candle
 
 
 class IndicatorTests(unittest.TestCase):
@@ -23,6 +24,12 @@ class IndicatorTests(unittest.TestCase):
         self.assertIn("dif", result)
         self.assertIn("dea", result)
         self.assertIn("histogram", result)
+
+    def test_quality_stock_indicators_return_values(self):
+        candles = [Candle(i, i + 1, i + 2, i, i + 1.5, 100, 1000) for i in range(120)]
+        self.assertIsNotNone(kdj(candles)["k"])
+        self.assertIsNotNone(psar(candles)["value"])
+        self.assertIsNotNone(supertrend(candles)["value"])
 
 
 if __name__ == "__main__":

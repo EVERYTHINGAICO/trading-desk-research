@@ -499,6 +499,113 @@ CREATE TABLE IF NOT EXISTS pre_ny_plans (
   FOREIGN KEY(run_id) REFERENCES pre_ny_runs(id)
 );
 CREATE INDEX IF NOT EXISTS idx_pre_ny_plans_run ON pre_ny_plans(run_id);
+
+CREATE TABLE IF NOT EXISTS quality_stock_dip_runs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  generated_at TEXT NOT NULL,
+  session_status TEXT NOT NULL,
+  market_regime TEXT NOT NULL,
+  data_quality TEXT NOT NULL CHECK(data_quality IN ('A','B','C')),
+  stocks_context TEXT NOT NULL,
+  macro_context TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  model TEXT NOT NULL,
+  universe_count INTEGER NOT NULL,
+  raw_output_json TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS quality_stock_dip_plans (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  run_id INTEGER NOT NULL,
+  symbol TEXT NOT NULL,
+  underlying_ticker TEXT NOT NULL,
+  instrument TEXT NOT NULL,
+  classification TEXT NOT NULL CHECK(classification IN ('A_PRICE_DISLOCATION','B_FUNDAMENTAL_BREAK','C_VALUATION_RESET')),
+  status TEXT NOT NULL CHECK(status IN ('BUY_ZONE','ACCUMULATE_GRADUALLY','WATCH_LOWER','WAIT_FOR_STABILIZATION','FUNDAMENTAL_BREAK_PASS','VALUATION_STILL_RICH','MISSED_DO_NOT_CHASE','NO_QUALITY_DIP')),
+  quality_score REAL NOT NULL,
+  dip_score REAL NOT NULL,
+  entry_timing_score REAL NOT NULL,
+  current_price REAL,
+  drawdown_pct REAL,
+  technical_invalidation REAL,
+  fundamental_invalidation TEXT NOT NULL,
+  base_target REAL,
+  extension_target REAL,
+  expected_horizon TEXT NOT NULL,
+  thesis TEXT NOT NULL,
+  drop_cause TEXT NOT NULL,
+  data_quality TEXT NOT NULL,
+  missing_data_json TEXT NOT NULL,
+  risks_json TEXT NOT NULL,
+  sources_json TEXT NOT NULL,
+  raw_plan_json TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(run_id) REFERENCES quality_stock_dip_runs(id)
+);
+CREATE INDEX IF NOT EXISTS idx_quality_stock_dip_plans_run ON quality_stock_dip_plans(run_id);
+CREATE TRIGGER IF NOT EXISTS trg_quality_stock_dip_plans_immutable_update
+BEFORE UPDATE ON quality_stock_dip_plans BEGIN
+  SELECT RAISE(ABORT, 'quality stock dip plans are frozen');
+END;
+CREATE TRIGGER IF NOT EXISTS trg_quality_stock_dip_plans_immutable_delete
+BEFORE DELETE ON quality_stock_dip_plans BEGIN
+  SELECT RAISE(ABORT, 'quality stock dip plans are frozen');
+END;
+
+CREATE TABLE IF NOT EXISTS quality_stock_dip_tranches (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  plan_id INTEGER NOT NULL,
+  tranche_number INTEGER NOT NULL,
+  zone_low REAL NOT NULL,
+  zone_high REAL NOT NULL,
+  relative_size REAL NOT NULL,
+  technical_invalidation REAL,
+  status TEXT NOT NULL DEFAULT 'NO_FILL',
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(plan_id,tranche_number),
+  FOREIGN KEY(plan_id) REFERENCES quality_stock_dip_plans(id)
+);
+CREATE TRIGGER IF NOT EXISTS trg_quality_stock_dip_tranche_levels_immutable
+BEFORE UPDATE ON quality_stock_dip_tranches
+WHEN NEW.plan_id != OLD.plan_id OR NEW.tranche_number != OLD.tranche_number
+  OR NEW.zone_low != OLD.zone_low OR NEW.zone_high != OLD.zone_high
+  OR NEW.relative_size != OLD.relative_size OR NEW.technical_invalidation IS NOT OLD.technical_invalidation
+BEGIN
+  SELECT RAISE(ABORT, 'quality stock dip tranche levels are frozen');
+END;
+
+CREATE TABLE IF NOT EXISTS quality_stock_dip_results (
+  tranche_id INTEGER PRIMARY KEY,
+  plan_id INTEGER NOT NULL,
+  symbol TEXT NOT NULL,
+  status TEXT NOT NULL,
+  entry_time INTEGER,
+  entry_price REAL,
+  exit_time INTEGER,
+  exit_price REAL,
+  exit_reason TEXT,
+  mfe_pct REAL,
+  mae_pct REAL,
+  result_pct REAL,
+  r_multiple REAL,
+  resolution_notes TEXT NOT NULL,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(tranche_id) REFERENCES quality_stock_dip_tranches(id),
+  FOREIGN KEY(plan_id) REFERENCES quality_stock_dip_plans(id)
+);
+CREATE VIEW IF NOT EXISTS quality_stock_dip_metrics AS
+SELECT
+  COUNT(*) FILTER (WHERE status != 'NO_FILL') AS tranches_triggered,
+  COUNT(*) FILTER (WHERE status IN ('BASE_TARGET','EXTENSION_TARGET')) AS wins,
+  COUNT(*) FILTER (WHERE status='STOP') AS losses,
+  COUNT(*) FILTER (WHERE status='OPEN') AS open,
+  COUNT(*) FILTER (WHERE status='NO_FILL') AS no_fill,
+  AVG(r_multiple) FILTER (WHERE status IN ('BASE_TARGET','EXTENSION_TARGET','STOP')) AS expectancy_r,
+  AVG(result_pct) FILTER (WHERE status IN ('BASE_TARGET','EXTENSION_TARGET','STOP')) AS average_result_pct,
+  SUM(CASE WHEN r_multiple > 0 THEN r_multiple ELSE 0 END) /
+    NULLIF(ABS(SUM(CASE WHEN r_multiple < 0 THEN r_multiple ELSE 0 END)),0) AS profit_factor
+FROM quality_stock_dip_results;
 """
 
 

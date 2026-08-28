@@ -51,6 +51,21 @@ def build_jobs(settings: dict) -> list[dict[str, object]]:
             'interval_seconds': int(scheduler.get('pre_ny_import_every_seconds', 60)),
         },
         {
+            'name': 'quality_stock_dip_context_export',
+            'script': 'export_quality_stock_dip_context.py',
+            'interval_seconds': int(scheduler.get('quality_stock_dip_context_every_seconds', 3600)),
+        },
+        {
+            'name': 'quality_stock_dip_review_import',
+            'script': 'import_quality_stock_dip_review.py',
+            'interval_seconds': int(scheduler.get('quality_stock_dip_import_every_seconds', 60)),
+        },
+        {
+            'name': 'quality_stock_dip_resolver',
+            'script': 'resolve_quality_stock_dip.py',
+            'interval_seconds': int(scheduler.get('quality_stock_dip_resolve_every_seconds', 3600)),
+        },
+        {
             'name': 'trigger_monitor',
             'script': 'run_trigger_monitor_once.py',
             'interval_seconds': int(scheduler['trigger_monitor_every_seconds']),
@@ -91,6 +106,15 @@ def build_jobs(settings: dict) -> list[dict[str, object]]:
 def write_heartbeat(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + '\n')
+
+
+def remove_stale_lock(lock_path: Path) -> None:
+    if not lock_path.exists():
+        return
+    try:
+        os.kill(int(lock_path.read_text().strip()), 0)
+    except (OSError, ValueError):
+        lock_path.unlink(missing_ok=True)
 
 
 def run_job(script: str, timeout_seconds: int) -> subprocess.CompletedProcess[str]:
@@ -181,6 +205,7 @@ def main() -> None:
     last_run = {str(job['name']): 0.0 for job in jobs}
 
     lock_path.parent.mkdir(parents=True, exist_ok=True)
+    remove_stale_lock(lock_path)
     try:
         lock_fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
     except FileExistsError:
