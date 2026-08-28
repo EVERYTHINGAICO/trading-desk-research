@@ -85,6 +85,19 @@ Purpose:
 - summarize opportunity counts, state mix, setup mix, risk-status mix, and resolution outcomes
 - keep reporting observational only; it does not alter trade plans or place trades
 
+### 8) Automatic FixTrades
+```bash
+python3 scripts/fix_trades.py --audit
+python3 scripts/fix_trades.py
+```
+Purpose:
+- audit every live Binance Demo position for native SL and TP coverage
+- ask the configured AI to select only an allowed policy action
+- add missing native protection from exact stored intent levels
+- fall back to the cycle-aware watcher when Binance rejects native protection
+- close positions without traceable protection levels using `MARKET reduceOnly`
+- persist and report every decision and result
+
 ## Data locations
 
 - SQLite DB: `research/trading-desk-shadow/data/desk.db`

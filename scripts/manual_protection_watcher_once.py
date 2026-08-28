@@ -13,6 +13,7 @@ from desk.binance_demo import BinanceDemoClient, DemoTradingError, enabled, form
 from desk.config import load_settings, project_root
 from desk.db import connect, init_db, insert_manual_protection_event, record_demo_exception
 from desk.telegram_alerts import notify_error
+from desk.position_cycles import sync_position_cycles
 
 
 def main() -> None:
@@ -23,14 +24,19 @@ def main() -> None:
     conn = connect(project_root() / settings['db_path'])
     init_db(conn)
     client = BinanceDemoClient(timeout=10)
-    positions = {p['symbol']: p for p in client.account().get('positions', []) if float(p.get('positionAmt', 0)) != 0}
+    account_positions = client.account().get('positions', [])
+    mode = 'HEDGE' if bool(client.position_mode().get('dualSidePosition')) else 'ONE_WAY'
+    cycles = sync_position_cycles(conn, account_positions, mode)
+    positions = {(p['symbol'], p.get('positionSide', 'BOTH')): p for p in account_positions if float(p.get('positionAmt', 0)) != 0}
     rows = conn.execute("""
-      SELECT i.* FROM demo_order_intents i
-      WHERE i.status IN ('PROTECTION_REQUIRED','PROTECTED') AND i.exchange_order_id IS NOT NULL
-      ORDER BY i.id
+      SELECT i.*,c.id AS cycle_id FROM demo_position_cycles c
+      JOIN demo_order_intents i ON i.id=c.protection_owner_intent_id
+      WHERE c.status='OPEN' AND i.status IN ('PROTECTION_REQUIRED','PROTECTED')
+        AND i.exchange_order_id IS NOT NULL
+      ORDER BY c.id
     """).fetchall()
     for row in rows:
-        position = positions.get(row['symbol'])
+        position = positions.get((row['symbol'], row['position_side']))
         if not position:
             continue
         try:
@@ -42,16 +48,19 @@ def main() -> None:
             mark = client.mark_price(row['symbol'])
             amount = float(position['positionAmt'])
             side = 'SELL' if amount > 0 else 'BUY'
-            triggers = [('STOP', float(row['stop_price']), mark <= float(row['stop_price']) if amount > 0 else mark >= float(row['stop_price'])),
-                        ('TAKE_PROFIT', float(row['primary_tp']), mark >= float(row['primary_tp']) if amount > 0 else mark <= float(row['primary_tp']))]
+            triggers = []
+            if not has_stop:
+                triggers.append(('STOP', float(row['stop_price']), mark <= float(row['stop_price']) if amount > 0 else mark >= float(row['stop_price'])))
+            if not has_tp:
+                triggers.append(('TAKE_PROFIT', float(row['primary_tp']), mark >= float(row['primary_tp']) if amount > 0 else mark <= float(row['primary_tp'])))
             hit = next((item for item in triggers if item[2]), None)
             if not hit:
                 continue
             protection_type, trigger, _ = hit
             existing = conn.execute("""
               SELECT 1 FROM demo_manual_protection_events
-              WHERE symbol=? AND position_side=? AND protection_type=? AND status IN ('SENT','CONFIRMED')
-            """, (row['symbol'], row['position_side'], protection_type)).fetchone()
+              WHERE position_cycle_id=? AND protection_type=? AND status IN ('SENT','CONFIRMED')
+            """, (row['cycle_id'], protection_type)).fetchone()
             if existing:
                 continue
             filters = client.exchange_info(row['symbol'])
@@ -65,7 +74,7 @@ def main() -> None:
                 'intent_id': row['id'], 'opportunity_id': row['opportunity_id'], 'symbol': row['symbol'],
                 'position_side': row['position_side'], 'protection_type': protection_type,
                 'trigger_price': trigger, 'observed_price': mark, 'action': f'{side}_MARKET_REDUCE_ONLY',
-                'exchange_order_id': str(order['orderId']), 'status': 'SENT',
+                'exchange_order_id': str(order['orderId']), 'status': 'SENT', 'position_cycle_id': row['cycle_id'],
             })
             remaining = [p for p in client.account().get('positions', []) if p.get('symbol') == row['symbol'] and p.get('positionSide') == row['position_side'] and float(p.get('positionAmt', 0)) != 0]
             status = 'CONFIRMED' if not remaining else 'SENT'

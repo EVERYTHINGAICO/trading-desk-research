@@ -360,6 +360,67 @@ CREATE TABLE IF NOT EXISTS demo_manual_protection_events (
 CREATE INDEX IF NOT EXISTS idx_demo_manual_protection_events_open
 ON demo_manual_protection_events(symbol, position_side, status);
 
+CREATE TABLE IF NOT EXISTS demo_position_cycles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  symbol TEXT NOT NULL,
+  position_mode TEXT NOT NULL,
+  position_side TEXT NOT NULL,
+  direction TEXT NOT NULL,
+  status TEXT NOT NULL,
+  protection_owner_intent_id INTEGER,
+  opened_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  closed_at TEXT,
+  last_quantity REAL NOT NULL,
+  last_entry_price REAL,
+  last_mark_price REAL,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_demo_position_cycles_one_open
+ON demo_position_cycles(symbol, position_mode, position_side) WHERE status='OPEN';
+
+CREATE TABLE IF NOT EXISTS demo_fix_trade_runs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  status TEXT NOT NULL,
+  mode TEXT NOT NULL,
+  model TEXT NOT NULL,
+  total_positions INTEGER NOT NULL DEFAULT 0,
+  protected_positions INTEGER NOT NULL DEFAULT 0,
+  unprotected_positions INTEGER NOT NULL DEFAULT 0,
+  repaired_positions INTEGER NOT NULL DEFAULT 0,
+  closed_positions INTEGER NOT NULL DEFAULT 0,
+  failed_positions INTEGER NOT NULL DEFAULT 0,
+  summary_json TEXT NOT NULL DEFAULT '{}',
+  started_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  finished_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS demo_fix_trade_actions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  run_id INTEGER NOT NULL,
+  position_cycle_id INTEGER NOT NULL,
+  symbol TEXT NOT NULL,
+  position_side TEXT NOT NULL,
+  policy TEXT NOT NULL,
+  decision TEXT NOT NULL,
+  stop_price REAL,
+  take_profit_price REAL,
+  level_source TEXT,
+  reason TEXT NOT NULL,
+  confidence REAL NOT NULL DEFAULT 0,
+  native_stop_before INTEGER NOT NULL,
+  native_tp_before INTEGER NOT NULL,
+  watcher_stop_before INTEGER NOT NULL,
+  watcher_tp_before INTEGER NOT NULL,
+  result_status TEXT NOT NULL,
+  result_json TEXT NOT NULL DEFAULT '{}',
+  ai_input_json TEXT NOT NULL,
+  ai_output_json TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(run_id) REFERENCES demo_fix_trade_runs(id),
+  FOREIGN KEY(position_cycle_id) REFERENCES demo_position_cycles(id)
+);
+
 CREATE TABLE IF NOT EXISTS demo_alert_deliveries (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   error_id INTEGER,
@@ -458,9 +519,12 @@ def init_db(conn: sqlite3.Connection) -> None:
             ("position_mode", "TEXT NOT NULL DEFAULT 'ONE_WAY'"),
             ("position_side", "TEXT NOT NULL DEFAULT 'BOTH'"),
             ("shadow_order_id", "TEXT"),
+            ("position_cycle_id", "INTEGER"),
         ),
         "demo_exchange_orders": (("shadow_order_id", "TEXT"),),
         "demo_order_fills": (("intent_id", "INTEGER"), ("shadow_order_id", "TEXT")),
+        "demo_protection_orders": (("position_cycle_id", "INTEGER"),),
+        "demo_manual_protection_events": (("position_cycle_id", "INTEGER"),),
     }
     for table, additions in migrations.items():
         columns = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
@@ -468,6 +532,8 @@ def init_db(conn: sqlite3.Connection) -> None:
             if name not in columns:
                 conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {definition}")
     conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_demo_order_intents_shadow_order_id ON demo_order_intents(shadow_order_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_demo_order_intents_cycle ON demo_order_intents(position_cycle_id)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_demo_manual_events_cycle ON demo_manual_protection_events(position_cycle_id,protection_type,status)")
     conn.commit()
 
 
@@ -669,13 +735,15 @@ def insert_preflight(conn: sqlite3.Connection, payload: dict) -> None:
 def upsert_protection_order(conn: sqlite3.Connection, payload: dict) -> None:
     conn.execute(
         """INSERT INTO demo_protection_orders (
-          algo_id,intent_id,shadow_order_id,opportunity_id,symbol,protection_type,position_side,
-          trigger_price,close_position,status,raw_response_json
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?)
-        ON CONFLICT(algo_id) DO UPDATE SET status=excluded.status,raw_response_json=excluded.raw_response_json,updated_at=CURRENT_TIMESTAMP""",
+           algo_id,intent_id,shadow_order_id,opportunity_id,symbol,protection_type,position_side,
+           trigger_price,close_position,status,raw_response_json,position_cycle_id
+         ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+         ON CONFLICT(algo_id) DO UPDATE SET status=excluded.status,raw_response_json=excluded.raw_response_json,
+           position_cycle_id=COALESCE(excluded.position_cycle_id,demo_protection_orders.position_cycle_id),updated_at=CURRENT_TIMESTAMP""",
         (str(payload['algoId']), payload.get('intent_id'), payload.get('shadow_order_id'), payload.get('opportunity_id'),
          payload['symbol'], payload.get('orderType'), payload.get('positionSide', 'BOTH'), payload.get('triggerPrice'),
-         1 if payload.get('closePosition') else 0, payload.get('algoStatus', 'NEW'), json.dumps(payload, ensure_ascii=False)),
+         1 if payload.get('closePosition') else 0, payload.get('algoStatus', 'NEW'), json.dumps(payload, ensure_ascii=False),
+         payload.get('position_cycle_id')),
     )
     conn.commit()
 
@@ -723,11 +791,11 @@ def insert_manual_protection_event(conn: sqlite3.Connection, payload: dict) -> i
     cur = conn.execute(
         """INSERT INTO demo_manual_protection_events(
            intent_id,opportunity_id,symbol,position_side,protection_type,trigger_price,
-           observed_price,action,exchange_order_id,status,error
-        ) VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
+           observed_price,action,exchange_order_id,status,error,position_cycle_id
+         ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",
         (payload.get('intent_id'), payload.get('opportunity_id'), payload['symbol'], payload.get('position_side', 'BOTH'),
          payload['protection_type'], payload['trigger_price'], payload.get('observed_price'), payload['action'],
-         payload.get('exchange_order_id'), payload['status'], payload.get('error')),
+          payload.get('exchange_order_id'), payload['status'], payload.get('error'), payload.get('position_cycle_id')),
     )
     conn.commit()
     return int(cur.lastrowid)

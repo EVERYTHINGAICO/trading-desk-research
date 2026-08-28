@@ -13,6 +13,7 @@ from desk.binance_demo import BinanceDemoClient, DemoTradingError, place_native_
 from desk.config import load_settings, project_root
 from desk.db import connect, create_reconciliation_run, finish_reconciliation_run, init_db, insert_demo_order, insert_position_snapshot, insert_reconciliation_issue, record_demo_exception, upsert_exchange_order, upsert_protection_order, update_demo_intent
 from desk.telegram_alerts import notify_error
+from desk.position_cycles import sync_position_cycles
 
 
 TERMINAL_SETUP_STATES = {'PASS', 'INVALIDATED', 'MISSED', 'CLOSED_WIN'}
@@ -31,6 +32,7 @@ def main() -> None:
     counts = {'positions': 0, 'orders': 0, 'algos': 0, 'matched': 0, 'orphans': 0, 'discrepancies': 0}
     mode = 'HEDGE' if bool(client.position_mode().get('dualSidePosition')) else 'ONE_WAY'
     account = client.account()
+    cycles = sync_position_cycles(conn, account.get('positions', []), mode)
     for position in account.get('positions', []):
         if float(position.get('positionAmt', 0)) == 0:
             continue
@@ -109,6 +111,12 @@ def main() -> None:
                 update_demo_intent(conn, row['client_order_id'], payload)
                 continue
             if current and current.get('status') == 'FILLED' and row['status'] in {'SUBMITTED', 'PROTECTION_REQUIRED'}:
+                cycle = cycles.get((row['symbol'], row['position_side']))
+                if cycle:
+                    conn.execute(
+                        "UPDATE demo_order_intents SET position_cycle_id=? WHERE id=?",
+                        (cycle['id'], row['id']),
+                    )
                 prefix = row['client_order_id'].removesuffix('-entry')
                 open_algos = client.open_algo_orders(row['symbol'])
                 expected_clients = {f'{prefix}-stop': 'stop', f'{prefix}-primary': 'primary'}
@@ -120,11 +128,16 @@ def main() -> None:
                 )
                 exits = list(present.values()) + created
                 for exit_order in exits:
-                    exit_order.update({'intent_id': row['id'], 'opportunity_id': row['opportunity_id'], 'shadow_order_id': row['shadow_order_id']})
+                    exit_order.update({'intent_id': row['id'], 'opportunity_id': row['opportunity_id'], 'shadow_order_id': row['shadow_order_id'], 'position_cycle_id': cycle['id'] if cycle else None})
                     upsert_protection_order(conn, exit_order)
                 confirmed = {item.get('clientAlgoId') for item in client.open_algo_orders(row['symbol'])}
                 if not set(expected_clients).issubset(confirmed):
                     raise DemoTradingError('Binance did not confirm both native protection orders')
+                if cycle:
+                    conn.execute(
+                        "UPDATE demo_position_cycles SET protection_owner_intent_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=?",
+                        (row['id'], cycle['id']),
+                    )
                 payload.update({
                     'status': 'PROTECTED', 'exchange_status': 'FILLED',
                     'entry_order_id': str(current['orderId']), 'exchange_order_id': str(current['orderId']),
