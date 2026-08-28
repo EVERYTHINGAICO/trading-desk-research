@@ -632,6 +632,11 @@ def init_db(conn: sqlite3.Connection) -> None:
         "demo_order_fills": (("intent_id", "INTEGER"), ("shadow_order_id", "TEXT")),
         "demo_protection_orders": (("position_cycle_id", "INTEGER"),),
         "demo_manual_protection_events": (("position_cycle_id", "INTEGER"),),
+        "demo_fix_trade_runs": (
+            ("decision_source", "TEXT NOT NULL DEFAULT 'AI'"),
+            ("trigger_source", "TEXT NOT NULL DEFAULT 'MANUAL'"),
+            ("deferred_positions", "INTEGER NOT NULL DEFAULT 0"),
+        ),
     }
     for table, additions in migrations.items():
         columns = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}

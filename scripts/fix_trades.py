@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import sys
 from datetime import datetime, timezone
@@ -15,6 +16,7 @@ from desk.config import load_settings, project_root
 from desk.db import connect, init_db, upsert_protection_order
 from desk.fixtrades import POLICY, build_ai_input, candidate_intents, request_ai_decision, validate_decision
 from desk.position_cycles import set_cycle_owner, sync_position_cycles
+from desk.fixtrades_lock import acquire_lock, release_lock
 
 
 def protection_flags(algos: list[dict]) -> tuple[bool, bool]:
@@ -29,6 +31,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--audit", action="store_true", help="decide and report without sending orders or changing watcher ownership")
     args = parser.parse_args()
+    lock_path = ROOT / "data" / "fixtrades.lock"
+    if not acquire_lock(lock_path):
+        print(json.dumps({"status": "SKIPPED_ALREADY_RUNNING"}))
+        return
+    atexit.register(release_lock, lock_path)
     if not enabled():
         raise DemoTradingError("Binance Demo order execution is disabled")
 
