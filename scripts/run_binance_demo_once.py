@@ -16,6 +16,20 @@ from desk.db import connect, get_open_opportunities, get_demo_intent_or_order, i
 from desk.telegram_alerts import notify_error
 
 
+def available_balance(client: BinanceDemoClient, minimum_available: float) -> tuple[bool, float]:
+    available = float(client.account().get('availableBalance', 0))
+    return available >= minimum_available, available
+
+
+def low_balance_status(available: float, minimum_available: float, notional: float) -> dict:
+    return {
+        'status': 'BINANCE_PAUSED_LOW_AVAILABLE_BALANCE',
+        'available_balance': available,
+        'minimum_available_balance': minimum_available,
+        'notional_usdt': notional,
+    }
+
+
 def main() -> None:
     settings = load_settings()
     root = project_root()
@@ -29,14 +43,9 @@ def main() -> None:
     client.ping()
     notional = float(os.getenv('BINANCE_DEMO_NOTIONAL_USDT', '50'))
     minimum_available = float(os.getenv('BINANCE_DEMO_MIN_AVAILABLE_BALANCE_USDT', str(notional * 1.25)))
-    available = float(client.account().get('availableBalance', 0))
-    if available < minimum_available:
-        print(json.dumps({
-            'status': 'BINANCE_PAUSED_LOW_AVAILABLE_BALANCE',
-            'available_balance': available,
-            'minimum_available_balance': minimum_available,
-            'notional_usdt': notional,
-        }))
+    sufficient, available = available_balance(client, minimum_available)
+    if not sufficient:
+        print(json.dumps(low_balance_status(available, minimum_available, notional)))
         return
     rows = get_open_opportunities(conn)
     for row in rows:
@@ -47,6 +56,10 @@ def main() -> None:
         existing = get_demo_intent_or_order(conn, row['id'])
         if existing:
             continue
+        sufficient, available = available_balance(client, minimum_available)
+        if not sufficient:
+            print(json.dumps(low_balance_status(available, minimum_available, notional)))
+            break
         now = datetime.now(timezone.utc)
         suffix = int(now.timestamp() * 1000) % 10000000000
         shadow_order_id = f"SHD-{now:%Y%m%d}-{row['id']:08d}-{suffix:010d}"
@@ -90,6 +103,12 @@ def main() -> None:
             insert_preflight(conn, preflight)
             if preflight['status'] != 'OK':
                 raise DemoTradingError(f"{row['symbol']} preflight failed")
+            sufficient, available = available_balance(client, minimum_available)
+            if not sufficient:
+                payload.update({'status': 'PAUSED_LOW_AVAILABLE_BALANCE', 'available_balance': available})
+                update_demo_intent(conn, payload['client_order_id'], payload)
+                print(json.dumps(low_balance_status(available, minimum_available, notional)))
+                break
             payload.update({'status': 'SUBMITTING', 'quantity': quantity})
             update_demo_intent(conn, payload['client_order_id'], payload)
             entry = submit_long_limit(client, row['symbol'], float(row['entry']), quantity, filters, payload['client_order_id'], payload['position_side'])
@@ -123,8 +142,9 @@ def main() -> None:
                 'filters': filters.__dict__, 'orders': result,
             })
         except (DemoTradingError, KeyError, TypeError, ValueError) as exc:
+            insufficient_margin = '"code":-2019' in str(exc)
             payload['error'] = str(exc)
-            payload['status'] = 'PROTECTION_REQUIRED' if entry_filled else 'REJECTED'
+            payload['status'] = 'PROTECTION_REQUIRED' if entry_filled else ('PAUSED_LOW_AVAILABLE_BALANCE' if insufficient_margin else 'REJECTED')
             if not payload.get('exchange_order_id'):
                 try:
                     open_orders = client.open_orders(row['symbol'])
@@ -139,14 +159,16 @@ def main() -> None:
                 'exchange_order_id': payload.get('exchange_order_id'),
                 'error_code': str(exc).split('"code":', 1)[1].split(',', 1)[0].strip() if '"code":' in str(exc) else None,
                 'error_type': 'BINANCE_EXECUTION', 'error_message': str(exc),
-                'action_taken': 'PROTECTION_WATCHER' if entry_filled else 'NO_RETRY_ASSET_BLOCKED',
+                'action_taken': 'PROTECTION_WATCHER' if entry_filled else ('GLOBAL_BALANCE_PAUSE' if insufficient_margin else 'NO_RETRY_ASSET_BLOCKED'),
             }
-            error_id = record_demo_exception(conn, error_payload, exc, block_asset=not entry_filled)
+            error_id = record_demo_exception(conn, error_payload, exc, block_asset=not entry_filled and not insufficient_margin)
             notify_error(error_payload, error_id=error_id, conn=conn)
         update_demo_intent(conn, payload['client_order_id'], payload)
         if payload['status'] == 'PROTECTED':
             insert_demo_order(conn, payload)
         print(json.dumps(payload, ensure_ascii=False))
+        if payload['status'] == 'PAUSED_LOW_AVAILABLE_BALANCE':
+            break
 
 
 if __name__ == '__main__':

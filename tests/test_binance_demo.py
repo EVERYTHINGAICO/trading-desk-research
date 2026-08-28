@@ -9,6 +9,7 @@ import sqlite3
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from reconcile_binance_demo import should_cancel_entry
+from run_binance_demo_once import available_balance, low_balance_status
 
 
 class FakeClient:
@@ -55,3 +56,20 @@ def test_pending_entry_cancels_for_terminal_setup_regardless_of_local_intent_sta
         assert should_cancel_entry(state, "PARTIALLY_FILLED")
     assert not should_cancel_entry("ENTRY_READY", "NEW")
     assert not should_cancel_entry("PASS", "FILLED")
+
+
+def test_balance_is_rechecked_for_each_entry_and_stops_when_it_drops():
+    class BalanceClient:
+        def __init__(self):
+            self.balances = iter((120, 60))
+
+        def account(self):
+            return {"availableBalance": next(self.balances)}
+
+    client = BalanceClient()
+    assert available_balance(client, 62.5) == (True, 120.0)
+    assert available_balance(client, 62.5) == (False, 60.0)
+
+
+def test_low_balance_status_is_a_pause_not_an_asset_rejection():
+    assert low_balance_status(60, 62.5, 50)["status"] == "BINANCE_PAUSED_LOW_AVAILABLE_BALANCE"
