@@ -83,15 +83,27 @@ def main() -> None:
     client = BinanceDemoClient(timeout=30)
     positions = open_positions(client)
     targets = [(p["symbol"], p.get("positionSide", "BOTH")) for p in positions]
+    try:
+        all_open_orders = client.open_all_orders()
+    except DemoTradingError:
+        all_open_orders = []
+    symbols_with_orders = sorted({o.get("symbol") for o in all_open_orders if o.get("symbol")})
 
     failures = []
+    affected_symbols = set(symbols_with_orders)
     if args.apply:
+        for symbol in symbols_with_orders:
+            try:
+                client.cancel_all_open_orders(symbol)
+            except DemoTradingError as exc:
+                failures.append({"symbol": symbol, "scope": "cancel_open_orders", "error": str(exc)})
         for position in positions:
             try:
                 close_position(client, position)
             except DemoTradingError as exc:
-                failures.append({"symbol": position["symbol"], "side": position.get("positionSide", "BOTH"), "error": str(exc)})
-        for symbol in {p["symbol"] for p in positions}:
+                failures.append({"symbol": position["symbol"], "side": position.get("positionSide", "BOTH"), "scope": "close", "error": str(exc)})
+        affected_symbols |= {p["symbol"] for p in positions}
+        for symbol in sorted(affected_symbols):
             try:
                 cleanup_orders(client, symbol)
             except DemoTradingError:
@@ -101,16 +113,24 @@ def main() -> None:
         verification = {"remaining": {f"{s}:{side}": 0 for (s, side) in targets}, "account_open": len(positions),
                         "wallet_balance": client.account().get("totalWalletBalance"),
                         "available_balance": client.account().get("availableBalance")}
+    try:
+        open_orders_after = len(client.open_all_orders())
+    except DemoTradingError:
+        open_orders_after = -1
 
     summary = {
         "mode": "AUDIT" if not args.apply else "AUTO_APPLY", "trigger_source": args.trigger_source,
         "endpoint": client.base_url, "total_open_before": len(positions),
+        "open_orders_before": len(all_open_orders), "symbols_with_open_orders": symbols_with_orders,
+        "open_orders_after": open_orders_after,
         "closing": targets, "failures": failures, "verification": verification,
         "reopen_hint": "reopen is organic: executor now prioritizes ENTRY_READY by shadow performance hierarchy (winners first, winners/losers ranks), no forced entries; reconcile drains closed cycles",
         "finished_at": datetime.now(timezone.utc).isoformat(),
     }
     if not args.apply:
         summary["status"] = "COMPLETED_NO_CHANGES" if not positions else "COMPLETED_NOTHING_SENT"
+    else:
+        summary["status"] = "COMPLETED_ALL_CLOSED" if positions and not failures else "COMPLETED_WITH_FAILURES" if failures else "COMPLETED_NO_CHANGES"
 
     reports = ROOT / "data" / "reports"
     reports.mkdir(parents=True, exist_ok=True)

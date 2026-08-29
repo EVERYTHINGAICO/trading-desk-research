@@ -150,6 +150,12 @@ class BinanceDemoClient:
     def cancel(self, symbol: str, order_id: int) -> object:
         return self._request("/fapi/v1/order", {"symbol": symbol, "orderId": order_id}, signed=True, method="DELETE")
 
+    def open_all_orders(self) -> object:
+        return self._request("/fapi/v1/openOrders", signed=True)
+
+    def cancel_all_open_orders(self, symbol: str) -> object:
+        return self._request("/fapi/v1/allOpenOrders", {"symbol": symbol}, signed=True, method="DELETE")
+
 
 def floor_step(value: float, step: float) -> float:
     if step <= 0:
