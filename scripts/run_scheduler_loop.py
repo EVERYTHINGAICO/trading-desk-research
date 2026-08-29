@@ -110,6 +110,11 @@ def build_jobs(settings: dict) -> list[dict[str, object]]:
             'script': 'manual_protection_watcher_once.py',
             'interval_seconds': int(scheduler.get('demo_manual_protection_every_seconds', 15)),
         },
+        {
+            'name': 'telegram_responder',
+            'script': 'telegram_poller_once.py',
+            'interval_seconds': int(scheduler.get('telegram_responder_every_seconds', 20)),
+        },
     ]
 
 

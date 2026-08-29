@@ -8,21 +8,37 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 
-def _token() -> str | None:
+DEFAULT_CHAT_ID = "5978723537"
+
+
+def telegram_account() -> dict | None:
     value = os.getenv("TELEGRAM_ALERT_BOT_TOKEN")
     if value:
-        return value
+        return {
+            "botToken": value,
+            "chatId": os.getenv("TELEGRAM_ALERT_CHAT_ID") or None,
+        }
     path = Path(os.getenv("OPENCLAW_CONFIG_FILE", "/openclaw-config/openclaw.json"))
     try:
         config = json.loads(path.read_text(encoding="utf-8"))
-        return config["channels"]["telegram"]["accounts"]["main"]["botToken"]
+        return config["channels"]["telegram"]["accounts"]["main"]
     except (OSError, KeyError, TypeError, json.JSONDecodeError):
         return None
 
 
+def telegram_chat_id() -> str:
+    account = telegram_account() or {}
+    return account.get("chatId") or os.getenv("TELEGRAM_ALERT_CHAT_ID") or DEFAULT_CHAT_ID
+
+
+def _token() -> str | None:
+    account = telegram_account() or {}
+    return account.get("botToken")
+
+
 def notify_error(payload: dict, *, error_id: int | None = None, conn=None) -> None:
     token = _token()
-    chat_id = os.getenv("TELEGRAM_ALERT_CHAT_ID", "5978723537")
+    chat_id = telegram_chat_id()
     if not token or not chat_id:
         if conn:
             from .db import insert_alert_delivery
