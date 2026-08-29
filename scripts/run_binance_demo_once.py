@@ -50,8 +50,8 @@ def main() -> None:
     rows = get_open_opportunities(conn)
     top100 = {r['symbol']: r['winner_rank'] for r in conn.execute("SELECT symbol,winner_rank FROM shadow_asset_top_100_winners")}
     candidates = sorted(
-        [row for row in rows if row['state'] == 'ENTRY_READY' and row['symbol'] in top100],
-        key=lambda row: top100[row['symbol']],
+        [row for row in rows if row['state'] == 'ENTRY_READY'],
+        key=lambda row: (row['symbol'] not in top100, top100.get(row['symbol'], 0), row['id']),
     )
     seen: set[str] = set()
     unique_candidates = []
