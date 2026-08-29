@@ -128,6 +128,10 @@ def main() -> None:
                         "UPDATE demo_order_intents SET position_cycle_id=? WHERE id=?",
                         (cycle['id'], row['id']),
                     )
+                    conn.execute(
+                        "UPDATE demo_position_cycles SET protection_owner_intent_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=?",
+                        (row['id'], cycle['id']),
+                    )
                 prefix = row['client_order_id'].removesuffix('-entry')
                 open_algos = client.open_algo_orders(row['symbol'])
                 expected_clients = {f'{prefix}-stop': 'stop', f'{prefix}-primary': 'primary'}
@@ -144,11 +148,6 @@ def main() -> None:
                 confirmed = {item.get('clientAlgoId') for item in client.open_algo_orders(row['symbol'])}
                 if not set(expected_clients).issubset(confirmed):
                     raise DemoTradingError('Binance did not confirm both native protection orders')
-                if cycle:
-                    conn.execute(
-                        "UPDATE demo_position_cycles SET protection_owner_intent_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=?",
-                        (row['id'], cycle['id']),
-                    )
                 payload.update({
                     'status': 'PROTECTED', 'exchange_status': 'FILLED',
                     'entry_order_id': str(current['orderId']), 'exchange_order_id': str(current['orderId']),
