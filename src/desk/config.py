@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,7 @@ def project_root() -> Path:
 def load_settings() -> dict[str, Any]:
     path = project_root() / "config" / "settings.json"
     settings = json.loads(path.read_text())
+    settings["db_path"] = os.getenv("SHADOW_DB_PATH", settings["db_path"])
     settings.setdefault(
         "risk_gate",
         {

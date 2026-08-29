@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import sys
 from datetime import datetime, timezone
@@ -14,7 +15,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from desk.indicators import snapshot
 from desk.market import FUTURES_BASE, _get_json, fetch_klines
 
-DB = ROOT / "data" / "desk.db"
+DB = Path(os.getenv("SHADOW_DB_PATH", ROOT / "data" / "desk.db"))
 OUT = ROOT / "data" / "quality_stock_dip_context.json"
 
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -100,6 +101,16 @@ def main() -> None:
         ORDER BY i.id
     """):
         payload = json.loads(row['payload_json'])
+        if row['status'] in {'PROTECTED', 'PROTECTION_REQUIRED'} and row['symbol'] not in active_symbols:
+            payload.update({
+                'status': 'CLOSED', 'closed_reason': 'position_closed_by_reconcile',
+                'reconciled_at': datetime.now(timezone.utc).isoformat(),
+            })
+            try:
+                update_demo_intent(conn, row['client_order_id'], payload)
+            except sqlite3.OperationalError:
+                continue
+            continue
         current = None
         try:
             current = client.order_status(row['symbol'], int(row['exchange_order_id'])) if row['exchange_order_id'] else None

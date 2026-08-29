@@ -2,13 +2,14 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-DB = ROOT / 'data' / 'desk.db'
+DB = Path(os.getenv('SHADOW_DB_PATH', ROOT / 'data' / 'desk.db'))
 OUT = ROOT / 'data' / 'pre_ny_context.json'
 
 

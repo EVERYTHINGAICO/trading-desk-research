@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import sqlite3
 import threading
@@ -11,7 +12,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
-DB = ROOT / "data" / "desk.db"
+DB = Path(os.getenv("SHADOW_DB_PATH", ROOT / "data" / "desk.db"))
 HEARTBEAT = ROOT / "data" / "scheduler_heartbeat.json"
 sys.path.insert(0, str(ROOT / "src"))
 from desk.binance_demo import BinanceDemoClient, DemoTradingError
