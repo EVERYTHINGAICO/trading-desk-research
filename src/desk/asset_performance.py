@@ -4,6 +4,17 @@ import sqlite3
 from datetime import datetime, timezone
 
 WINDOWS = {"ALL": None, "24H": "-24 hours", "7D": "-7 days", "30D": "-30 days"}
+MIN_HISTORICAL_TRADES = 30
+
+
+def is_historical_loser(conn: sqlite3.Connection, symbol: str, window: str = "ALL") -> bool:
+    row = conn.execute(
+        "SELECT closed_trades, expectancy_r FROM shadow_asset_performance WHERE symbol=? AND window=?",
+        (symbol, window),
+    ).fetchone()
+    if row is None:
+        return False
+    return int(row["closed_trades"] or 0) >= MIN_HISTORICAL_TRADES and (row["expectancy_r"] or 0) < 0
 
 
 def refresh_asset_performance(conn: sqlite3.Connection) -> int:

@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from desk.asset_performance import refresh_asset_performance
+from desk.asset_performance import is_historical_loser, refresh_asset_performance
 from desk.db import init_db
 
 
@@ -57,3 +57,18 @@ def test_small_samples_are_stored_but_not_ranked():
     assert row["closed_trades"] == 5
     assert row["winner_rank"] is None
     assert conn.execute("SELECT COUNT(*) FROM shadow_asset_top_100_winners").fetchone()[0] == 0
+
+
+def test_is_historical_loser_uses_expectancy_not_rank_presence():
+    conn = database()
+    for index in range(30):
+        add_result(conn, index + 1, "OPUSDT", "WON", 2.0)
+        add_result(conn, index + 201, "ZKPUSDT", "STOPPED", -1.0)
+    refresh_asset_performance(conn)
+    op_row = conn.execute("SELECT * FROM shadow_asset_performance WHERE symbol='OPUSDT' AND window='ALL'").fetchone()
+    zp_row = conn.execute("SELECT * FROM shadow_asset_performance WHERE symbol='ZKPUSDT' AND window='ALL'").fetchone()
+    assert op_row["winner_rank"] is not None and op_row["loser_rank"] is not None
+    assert zp_row["winner_rank"] is not None and zp_row["loser_rank"] is not None
+    assert is_historical_loser(conn, "ZKPUSDT") is True
+    assert is_historical_loser(conn, "OPUSDT") is False
+    assert is_historical_loser(conn, "RANDOMUSDT") is False
