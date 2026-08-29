@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 
+from desk.asset_performance import hierarchy_sort_key
 from desk.binance_demo import BinanceDemoClient, DemoTradingError, enabled, place_native_protections, quantity_for_notional, submit_long_limit, wait_for_fill
 from desk.config import load_settings, project_root
 from desk.db import connect, get_open_opportunities, get_demo_intent_or_order, init_db, insert_demo_intent, insert_demo_order, insert_preflight, is_demo_asset_blocked, record_demo_exception, upsert_exchange_order, upsert_protection_order, update_demo_intent
@@ -48,9 +49,16 @@ def main() -> None:
         print(json.dumps(low_balance_status(available, minimum_available, notional)))
         return
     rows = get_open_opportunities(conn)
-    for row in rows:
-        if row['state'] != 'ENTRY_READY':
-            continue
+    ranked = conn.execute(
+        "SELECT symbol,winner_rank,loser_rank FROM shadow_asset_performance WHERE window='ALL' AND (winner_rank IS NOT NULL OR loser_rank IS NOT NULL)"
+    ).fetchall()
+    winners = {r['symbol']: r['winner_rank'] for r in ranked if r['winner_rank'] is not None}
+    losers = {r['symbol']: r['loser_rank'] for r in ranked if r['loser_rank'] is not None}
+    candidates = sorted(
+        [row for row in rows if row['state'] == 'ENTRY_READY'],
+        key=lambda row: hierarchy_sort_key(winners, losers, row['symbol'], row['id']),
+    )
+    for row in candidates:
         if is_demo_asset_blocked(conn, row['symbol']):
             continue
         existing = get_demo_intent_or_order(conn, row['id'])
