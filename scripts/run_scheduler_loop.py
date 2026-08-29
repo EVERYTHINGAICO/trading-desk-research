@@ -81,6 +81,11 @@ def build_jobs(settings: dict) -> list[dict[str, object]]:
             'interval_seconds': int(scheduler['resolve_every_seconds']),
         },
         {
+            'name': 'shadow_asset_performance_refresh',
+            'script': 'refresh_shadow_asset_performance.py',
+            'interval_seconds': int(scheduler.get('asset_performance_every_seconds', 3600)),
+        },
+        {
             'name': 'binance_demo_executor',
             'script': 'run_binance_demo_once.py',
             'interval_seconds': int(scheduler.get('demo_executor_every_seconds', 300)),
@@ -112,7 +117,11 @@ def remove_stale_lock(lock_path: Path) -> None:
     if not lock_path.exists():
         return
     try:
-        os.kill(int(lock_path.read_text().strip()), 0)
+        lock_pid = int(lock_path.read_text().strip())
+        if lock_pid == os.getpid():
+            lock_path.unlink(missing_ok=True)
+            return
+        os.kill(lock_pid, 0)
     except (OSError, ValueError):
         lock_path.unlink(missing_ok=True)
 

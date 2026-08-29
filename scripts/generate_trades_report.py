@@ -87,6 +87,8 @@ def main() -> None:
       FROM shadow_trade_results r JOIN opportunities o ON o.id=r.opportunity_id
       WHERE r.status='OPEN' ORDER BY r.opportunity_id DESC
     """)
+    asset_winners = rows(conn, "SELECT * FROM shadow_asset_top_100_winners")
+    asset_losers = rows(conn, "SELECT * FROM shadow_asset_top_100_losers")
 
     intents = rows(conn, """
       SELECT i.id,i.opportunity_id,i.shadow_order_id,i.symbol,i.client_order_id,i.status,
@@ -251,6 +253,9 @@ def main() -> None:
             'performance': performance(shadow_closed),
             'closed_by_score': aggregate_closed(shadow_closed, 'score_band'),
             'closed_by_setup': aggregate_closed(shadow_closed, 'setup_type'),
+            'asset_ranking_method': 'ALL window; minimum 30 closed trades; expectancy R then total R',
+            'top_100_assets': asset_winners,
+            'bottom_100_assets': asset_losers,
         },
         'binance_local': {
             'intent_count': len(intents),
@@ -294,6 +299,10 @@ def main() -> None:
     ]
     for band in snapshot['shadow']['closed_by_score']:
         lines.append(f"  - {band['score_band']}: n={band['trades']}, wins={band['wins']}, losses={band['losses']}, win={band['win_rate_pct']}%, avgR={band['average_r']}\n")
+    lines.extend(['\n## Shadow assets\n', '- Ranking: minimum 30 closed trades; expectancy R then total R\n', '- Top 20 winners:\n'])
+    lines.extend(f"  - #{item['winner_rank']} {item['symbol']}: n={item['closed_trades']}, win={item['win_rate_pct']:.2f}%, expectancy={item['expectancy_r']:.4f}R, total={item['total_r']:.2f}R\n" for item in asset_winners[:20])
+    lines.append('- Top 20 losers:\n')
+    lines.extend(f"  - #{item['loser_rank']} {item['symbol']}: n={item['closed_trades']}, win={item['win_rate_pct']:.2f}%, expectancy={item['expectancy_r']:.4f}R, total={item['total_r']:.2f}R\n" for item in asset_losers[:20])
     lines.extend([
         '\n## Binance Demo live\n',
         f"- Connected: {live.get('connected')}\n",

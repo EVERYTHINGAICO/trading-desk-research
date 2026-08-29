@@ -100,6 +100,46 @@ CREATE TABLE IF NOT EXISTS shadow_trade_results (
   created_at TEXT DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(opportunity_id) REFERENCES opportunities(id)
 );
+CREATE INDEX IF NOT EXISTS idx_shadow_trade_results_symbol_status
+ON shadow_trade_results(symbol,status);
+
+CREATE TABLE IF NOT EXISTS shadow_asset_performance (
+  symbol TEXT NOT NULL,
+  window TEXT NOT NULL CHECK(window IN ('ALL','24H','7D','30D')),
+  closed_trades INTEGER NOT NULL,
+  wins INTEGER NOT NULL,
+  losses INTEGER NOT NULL,
+  open_trades INTEGER NOT NULL,
+  win_rate_pct REAL,
+  expectancy_r REAL,
+  total_r REAL NOT NULL,
+  average_win_r REAL,
+  average_loss_r REAL,
+  profit_factor REAL,
+  average_score REAL,
+  distinct_setups INTEGER NOT NULL,
+  first_signal_at TEXT,
+  last_signal_at TEXT,
+  source_trade_count INTEGER NOT NULL,
+  winner_rank INTEGER,
+  loser_rank INTEGER,
+  refreshed_at TEXT NOT NULL,
+  PRIMARY KEY(symbol,window)
+);
+CREATE INDEX IF NOT EXISTS idx_shadow_asset_performance_winner
+ON shadow_asset_performance(window,winner_rank);
+CREATE INDEX IF NOT EXISTS idx_shadow_asset_performance_loser
+ON shadow_asset_performance(window,loser_rank);
+
+CREATE VIEW IF NOT EXISTS shadow_asset_top_100_winners AS
+SELECT * FROM shadow_asset_performance
+WHERE window='ALL' AND closed_trades>=30 AND expectancy_r>0 AND winner_rank<=100
+ORDER BY winner_rank;
+
+CREATE VIEW IF NOT EXISTS shadow_asset_top_100_losers AS
+SELECT * FROM shadow_asset_performance
+WHERE window='ALL' AND closed_trades>=30 AND expectancy_r<0 AND loser_rank<=100
+ORDER BY loser_rank;
 
 CREATE TABLE IF NOT EXISTS binance_demo_orders (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -41,6 +41,7 @@
     "trigger_monitor_every_seconds": 300,
     "stateful_open_monitor_every_seconds": 300,
     "resolve_every_seconds": 300,
+    "asset_performance_every_seconds": 3600,
     "demo_executor_every_seconds": 300,
     "demo_monitor_every_seconds": 15,
     "demo_reconcile_every_seconds": 15,

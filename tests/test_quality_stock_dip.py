@@ -65,3 +65,11 @@ def test_scheduler_removes_invalid_stale_lock(tmp_path):
     lock.write_text("not-a-pid")
     remove_stale_lock(lock)
     assert not lock.exists()
+
+
+def test_scheduler_removes_reused_current_pid_lock(tmp_path):
+    import os
+    lock = tmp_path / "scheduler.lock"
+    lock.write_text(str(os.getpid()))
+    remove_stale_lock(lock)
+    assert not lock.exists()
