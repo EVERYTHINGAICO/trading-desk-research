@@ -141,6 +141,25 @@ SELECT * FROM shadow_asset_performance
 WHERE window='ALL' AND closed_trades>=30 AND expectancy_r<0 AND loser_rank<=100
 ORDER BY loser_rank;
 
+CREATE TABLE IF NOT EXISTS shadow_hour_performance (
+  hour_utc INTEGER NOT NULL CHECK(hour_utc BETWEEN 0 AND 23),
+  window TEXT NOT NULL CHECK(window IN ('ALL','30D','7D')),
+  closed_trades INTEGER NOT NULL,
+  wins INTEGER NOT NULL,
+  losses INTEGER NOT NULL,
+  win_rate_pct REAL,
+  expectancy_r REAL,
+  total_r REAL NOT NULL,
+  average_win_r REAL,
+  average_loss_r REAL,
+  profit_factor REAL,
+  tier TEXT NOT NULL DEFAULT 'NEUTRAL',
+  refreshed_at TEXT NOT NULL,
+  PRIMARY KEY(hour_utc,window)
+);
+CREATE INDEX IF NOT EXISTS idx_shadow_hour_performance_tier
+ON shadow_hour_performance(window,tier,hour_utc);
+
 CREATE TABLE IF NOT EXISTS binance_demo_orders (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   opportunity_id INTEGER NOT NULL UNIQUE,

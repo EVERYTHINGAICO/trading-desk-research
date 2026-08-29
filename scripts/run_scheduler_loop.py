@@ -86,6 +86,11 @@ def build_jobs(settings: dict) -> list[dict[str, object]]:
             'interval_seconds': int(scheduler.get('asset_performance_every_seconds', 3600)),
         },
         {
+            'name': 'shadow_hour_performance_refresh',
+            'script': 'refresh_shadow_hour_performance.py',
+            'interval_seconds': int(scheduler.get('hour_performance_every_seconds', 3600)),
+        },
+        {
             'name': 'binance_demo_executor',
             'script': 'run_binance_demo_once.py',
             'interval_seconds': int(scheduler.get('demo_executor_every_seconds', 300)),
