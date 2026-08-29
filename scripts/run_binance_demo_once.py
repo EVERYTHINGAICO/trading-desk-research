@@ -48,10 +48,12 @@ def main() -> None:
         print(json.dumps(low_balance_status(available, minimum_available, notional)))
         return
     rows = get_open_opportunities(conn)
-    top100 = {r['symbol']: r['winner_rank'] for r in conn.execute("SELECT symbol,winner_rank FROM shadow_asset_top_100_winners")}
+    winners = {r['symbol']: r['winner_rank'] for r in conn.execute(
+        "SELECT DISTINCT symbol,winner_rank FROM shadow_asset_performance WHERE window='ALL' AND winner_rank IS NOT NULL AND winner_rank<=251"
+    )}
     candidates = sorted(
-        [row for row in rows if row['state'] == 'ENTRY_READY'],
-        key=lambda row: (row['symbol'] not in top100, top100.get(row['symbol'], 0), row['id']),
+        [row for row in rows if row['state'] == 'ENTRY_READY' and row['symbol'] in winners],
+        key=lambda row: winners[row['symbol']],
     )
     seen: set[str] = set()
     unique_candidates = []
