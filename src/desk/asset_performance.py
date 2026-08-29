@@ -58,11 +58,3 @@ def refresh_asset_performance(conn: sqlite3.Connection) -> int:
             inserted += 1
     conn.commit()
     return inserted
-
-
-def hierarchy_sort_key(winners: dict[str, int], losers: dict[str, int], symbol: str, fallback: int = 0) -> tuple[int, int, int]:
-    if symbol in winners:
-        return (0, winners[symbol], 0)
-    if symbol in losers:
-        return (1, losers[symbol], 0)
-    return (2, 0, fallback)

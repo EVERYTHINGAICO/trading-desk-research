@@ -71,6 +71,7 @@ def main() -> None:
     parser.add_argument("--audit", action="store_true")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--trigger-source", default="MANUAL")
+    parser.add_argument("--unblock-all", action="store_true")
     args = parser.parse_args()
     lock_path = ROOT / "data" / "restart.lock"
     if not acquire_lock(lock_path):
@@ -79,6 +80,18 @@ def main() -> None:
     atexit.register(release_lock, lock_path)
     if args.apply and not enabled():
         raise DemoTradingError("Binance Demo order execution is disabled")
+    if args.unblock_all:
+        from desk.config import load_settings, project_root
+        from desk.db import connect, init_db
+        unblock_conn = connect(project_root() / load_settings()["db_path"])
+        init_db(unblock_conn)
+        blocked = unblock_conn.execute("SELECT COUNT(*) FROM demo_asset_blocks WHERE active=1").fetchone()[0]
+        unblock_conn.execute("UPDATE demo_asset_blocks SET active=0,resolved_at=CURRENT_TIMESTAMP WHERE active=1")
+        unblock_conn.commit()
+        unblock_conn.close()
+        unblocked = blocked
+    else:
+        unblocked = 0
 
     client = BinanceDemoClient(timeout=30)
     positions = open_positions(client)
@@ -121,10 +134,11 @@ def main() -> None:
     summary = {
         "mode": "AUDIT" if not args.apply else "AUTO_APPLY", "trigger_source": args.trigger_source,
         "endpoint": client.base_url, "total_open_before": len(positions),
+        "unblocked_assets": unblocked,
         "open_orders_before": len(all_open_orders), "symbols_with_open_orders": symbols_with_orders,
         "open_orders_after": open_orders_after,
         "closing": targets, "failures": failures, "verification": verification,
-        "reopen_hint": "reopen is organic: executor now prioritizes ENTRY_READY by shadow performance hierarchy (winners first, winners/losers ranks), no forced entries; reconcile drains closed cycles",
+        "reopen_hint": "reopen is organic: executor opens ENTRY_READY only for symbols in the shadow-performance top 100 winners (window ALL), ranked by winner_rank; others are excluded; reconcile drains closed cycles",
         "finished_at": datetime.now(timezone.utc).isoformat(),
     }
     if not args.apply:
