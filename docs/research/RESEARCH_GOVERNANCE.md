@@ -1,5 +1,11 @@
 # Research Governance
 
+- Governance version: `research-governance-v1`
+- Status: ratified by [GOV-001](decisions/GOV-001_RESEARCH_GOVERNANCE_RATIFICATION.md)
+- Effective date: 2026-09-25
+- Claim owner: Everything AI Co repository maintainers
+- Confirmatory validator: must be named per E2+ experiment; currently unassigned and therefore blocking
+
 ## Evidence Classes
 
 | Class | Meaning | Permitted claim |
@@ -38,6 +44,8 @@ Every experiment must bind:
 - **Claim owner:** signs the final scope and limitations of every public claim.
 
 One person may fill multiple roles during exploratory work, but E2 and above must disclose role overlap. E5 requires a reproducer who did not implement the tested strategy.
+
+An AI agent may assist any role but cannot be the sole independent validator or reproducer when it shares implementation lineage, prompts, context, or data access with the work under review.
 
 ## Change Control
 

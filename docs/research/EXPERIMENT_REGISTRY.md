@@ -1,5 +1,9 @@
 # Experiment Registry
 
+- Registry governance: `research-governance-v1`
+- Registry custodian: Everything AI Co repository maintainers
+- Confirmatory registrations accepted: none
+
 This registry prevents undocumented model selection and survivorship of positive results. It begins prospectively with the public research program. Historical strategies are listed for completeness but are not retroactively treated as preregistered.
 
 ## Legacy Research Inventory
