@@ -21,7 +21,7 @@ Demo activation is operational observation, not confirmation of edge.
 
 | Experiment ID | Hypothesis ID | Registered UTC | Evidence class | Strategy/config | Dataset manifest | Status | Result record |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| None | None | None | None | None | None | `NOT_STARTED` | None |
+| [EXP-2026-001](registrations/EXP-2026-001.md) | `H-PROTOCOL-FPC-001` | 2026-09-25T00:00:00Z | E2 requested | Methods experiment | Not generated | `REGISTERED_BLOCKED_VALIDATOR` | None |
 
 ## Registration Rules
 
