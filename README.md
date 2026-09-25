@@ -6,6 +6,7 @@ An experimental algorithmic trading research system from [Everything AI Co](http
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Product version](https://img.shields.io/badge/version-0.9.0--alpha.1-orange.svg)](VERSION)
+[![Research evidence](https://img.shields.io/badge/research-E1%20exploratory-yellow.svg)](docs/research/README.md)
 
 > [!IMPORTANT]
 > **The strategies in this repository have not been validated with sufficient rigor and do not have a proven trading edge.** Nothing here demonstrates future profitability. The contribution of this project is the system, research workflow, safety controls, evidence trail, and method used to evaluate strategies without look-ahead bias.
@@ -28,7 +29,7 @@ This is a public research repository, not financial advice, a trade recommendati
 
 Passing software tests means that the tested code behaves according to its contracts. It does **not** establish statistical significance, robustness across regimes, realistic live execution, or profitable predictive edge.
 
-The current suite has 119 passing software tests. Strategy validation remains a separate and unfinished research task requiring adequate forward samples, fees and slippage, regime coverage, out-of-sample analysis, and documented acceptance criteria.
+The current suite has 120 passing software tests. Strategy validation remains a separate and unfinished research task requiring adequate forward samples, fees and slippage, regime coverage, out-of-sample analysis, and documented acceptance criteria.
 
 ## Strategy Research Status
 
@@ -108,6 +109,14 @@ This separation is deliberate: code correctness, operational reliability, and tr
 
 ## Key Documentation
 
+- [Research program index and current evidence state](docs/research/README.md)
+- [Doctoral-grade research program](docs/research/DOCTORAL_RESEARCH_PROGRAM.md)
+- [Scientific threat model](docs/research/SCIENTIFIC_THREAT_MODEL.md)
+- [Research bibliography](docs/research/BIBLIOGRAPHY.md)
+- [Research governance](docs/research/RESEARCH_GOVERNANCE.md)
+- [Experiment registry](docs/research/EXPERIMENT_REGISTRY.md)
+- [Evidence gates](docs/research/EVIDENCE_GATES.md)
+- [Research data management](docs/research/DATA_MANAGEMENT_PLAN.md)
 - [Authority and scope](docs/AUTHORITY.md)
 - [Execution state](docs/EXECUTION_STATE.md)
 - [Multi-strategy Demo design](docs/DEMO_MULTI_STRATEGY_DESIGN.md)
