@@ -108,6 +108,11 @@ This separation is deliberate: code correctness, operational reliability, and tr
 
 ## Key Documentation
 
+- [Doctoral-grade research program](docs/research/DOCTORAL_RESEARCH_PROGRAM.md)
+- [Research governance](docs/research/RESEARCH_GOVERNANCE.md)
+- [Experiment registry](docs/research/EXPERIMENT_REGISTRY.md)
+- [Evidence gates](docs/research/EVIDENCE_GATES.md)
+- [Research data management](docs/research/DATA_MANAGEMENT_PLAN.md)
 - [Authority and scope](docs/AUTHORITY.md)
 - [Execution state](docs/EXECUTION_STATE.md)
 - [Multi-strategy Demo design](docs/DEMO_MULTI_STRATEGY_DESIGN.md)
