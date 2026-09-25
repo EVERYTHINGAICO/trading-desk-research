@@ -1,0 +1,14 @@
+{
+  "schema_version": "research-registration-manifest-v1",
+  "experiment_id": "EXP-2026-001",
+  "registered_at_utc": "2026-09-25T00:00:00Z",
+  "governance_version": "research-governance-v1",
+  "status": "REGISTERED_BLOCKED_VALIDATOR",
+  "files": {
+    "docs/research/protocols/EXP-2026-001_PROTOCOL.md": "ffd29cbf8182fcf80669b450cdb9d423d471967bd84e03a6d6164cf5298685d0",
+    "docs/research/protocols/EXP-2026-001_ANALYSIS_PLAN.md": "f0db84c569a9d5cad927c68fd91c40647a3d7f42b9f964402d8437adfaca93a0",
+    "docs/research/registrations/EXP-2026-001.md": "3ea7fb9f89aa39fc4e0a13ce226656692acba85cb24ac23bc683e688d389bee5"
+  },
+  "confirmatory_outcomes_generated": false,
+  "orders_authorized": false
+}

@@ -6,7 +6,7 @@ This directory is the normative entry point for scientific claims made by the Ev
 
 - Program maturity: design and governance.
 - Highest strategy evidence class: `E1` exploratory.
-- Confirmatory experiments registered: zero.
+- Confirmatory experiments registered: one methods experiment, blocked before execution.
 - Confirmatory validator assigned: no; E2 promotion is blocked.
 - Proven strategy edges: zero.
 - Live-capital approval: outside scope.
@@ -22,6 +22,7 @@ These statements are intentionally conservative. Software tests, Demo deployment
 4. [Evidence gates](EVIDENCE_GATES.md): required evidence and failure consequences.
 5. [Experiment registry](EXPERIMENT_REGISTRY.md): complete inventory, including failures and null results.
 6. [Hypothesis template](HYPOTHESIS_TEMPLATE.md): preregistration contract.
+   - [EXP-2026-001 registration](registrations/EXP-2026-001.md): false-promotion control protocol, currently blocked.
 7. [Data management plan](DATA_MANAGEMENT_PLAN.md): provenance, privacy, FAIR metadata, and retention.
 8. [Bibliography](BIBLIOGRAPHY.md): foundational sources and persistent links.
 
