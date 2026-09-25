@@ -1,0 +1,36 @@
+{
+  "schema_version": "research-event-v1",
+  "record_id": "SYNTH-EVENT-001",
+  "dataset_id": "canonical-synthetic-v1",
+  "experiment_id": "CONTRACT-DESIGN-ONLY",
+  "event_id": "SYNTH-MARKET-EVENT-001",
+  "decision_id": "SYNTH-DECISION-001",
+  "strategy_version": "synthetic-rule-v1",
+  "config_sha256": "e56e72d52f4a60a166497809d95c3b4a14ed3b8b89ff7a3c0964a8a2986df315",
+  "instrument": "SYNTHUSDT",
+  "source": "deterministic-design-fixture",
+  "exchange_event_ms": 1780000059999,
+  "exchange_available_ms": 1780000060000,
+  "received_ms": 1780000060120,
+  "decision_ms": 1780000060200,
+  "quality": "SYNTHETIC",
+  "quality_reason": "Design fixture; not observed market data",
+  "supersedes_record_id": null,
+  "payload": {
+    "previous_close": 100.0,
+    "close": 98.0,
+    "volume": 240.0,
+    "baseline_volume": 100.0,
+    "return_1m": -0.02,
+    "relative_volume": 2.4,
+    "rule": {
+      "return_1m_lte": -0.015,
+      "relative_volume_gte": 2.0
+    },
+    "predicates": {
+      "return_trigger": true,
+      "volume_trigger": true
+    },
+    "decision": "WATCH"
+  }
+}
