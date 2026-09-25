@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/EVERYTHINGAICO/trading-desk-research/docs/research/schemas/dataset-manifest-v1.schema.json",
+  "title": "Research dataset manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "dataset_id", "dataset_version", "created_at_utc",
+    "producer", "source", "source_license", "time_range", "schema_ids",
+    "files", "known_gaps", "exclusions", "generator_commit",
+    "environment_digest", "privacy_class", "signatures"
+  ],
+  "properties": {
+    "schema_version": {"const": "dataset-manifest-v1"},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "dataset_version": {"type": "string", "minLength": 1},
+    "created_at_utc": {"type": "string", "format": "date-time"},
+    "producer": {"type": "string", "minLength": 1},
+    "source": {"type": "string", "minLength": 1},
+    "source_license": {"type": "string", "minLength": 1},
+    "time_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_inclusive_utc", "end_inclusive_utc"],
+      "properties": {
+        "start_inclusive_utc": {"type": "string", "format": "date-time"},
+        "end_inclusive_utc": {"type": "string", "format": "date-time"}
+      }
+    },
+    "schema_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1, "uniqueItems": true},
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "media_type", "bytes", "rows", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "media_type": {"type": "string", "minLength": 1},
+          "bytes": {"type": "integer", "minimum": 0},
+          "rows": {"type": ["integer", "null"], "minimum": 0},
+          "sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "known_gaps": {"type": "array", "items": {"type": "object"}},
+    "exclusions": {"type": "array", "items": {"type": "object"}},
+    "generator_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "environment_digest": {"type": "string", "minLength": 1},
+    "supersedes_dataset_id": {"type": ["string", "null"]},
+    "privacy_class": {
+      "enum": ["PUBLIC", "PUBLIC_SANITIZED", "RESTRICTED_REPRODUCIBLE", "PRIVATE_OPERATIONAL"]
+    },
+    "signatures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["method", "status", "signer", "artifact"],
+        "properties": {
+          "method": {"enum": ["SIGSTORE", "ED25519", "UNSIGNED_DESIGN_FIXTURE"]},
+          "status": {"enum": ["VERIFIED", "UNVERIFIED", "NOT_APPLICABLE"]},
+          "signer": {"type": ["string", "null"]},
+          "artifact": {"type": ["string", "null"]}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -24,6 +24,7 @@ These statements are intentionally conservative. Software tests, Demo deployment
 6. [Hypothesis template](HYPOTHESIS_TEMPLATE.md): preregistration contract.
    - [EXP-2026-001 registration](registrations/EXP-2026-001.md): false-promotion control protocol, currently blocked.
 7. [Data management plan](DATA_MANAGEMENT_PLAN.md): provenance, privacy, FAIR metadata, and retention.
+   - [Causal data contract](DATA_CONTRACT.md): timestamps, identities, quality states, schemas, signing, and canonical reconstruction.
 8. [Bibliography](BIBLIOGRAPHY.md): foundational sources and persistent links.
 
 ## Rules For Humans And AI Agents

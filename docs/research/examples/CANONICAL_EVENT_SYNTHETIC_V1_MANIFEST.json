@@ -1,0 +1,39 @@
+{
+  "schema_version": "dataset-manifest-v1",
+  "dataset_id": "canonical-synthetic-v1",
+  "dataset_version": "1.0.0",
+  "created_at_utc": "2026-09-25T00:00:00Z",
+  "producer": "Everything AI Co research program",
+  "source": "Deterministic hand-verifiable design fixture",
+  "source_license": "Apache-2.0",
+  "time_range": {
+    "start_inclusive_utc": "2026-05-28T20:27:40Z",
+    "end_inclusive_utc": "2026-05-28T20:27:40Z"
+  },
+  "schema_ids": [
+    "research-event-v1"
+  ],
+  "files": [
+    {
+      "path": "docs/research/examples/CANONICAL_EVENT_SYNTHETIC_V1.json",
+      "media_type": "application/json",
+      "bytes": 1077,
+      "rows": 1,
+      "sha256": "2bc8800bf562c8eecc923e6b8c14d279237a044d113854c846c9c76189a3157a"
+    }
+  ],
+  "known_gaps": [],
+  "exclusions": [],
+  "generator_commit": "b75c1468b50486eb984ce6ff8e8769c00c1f6a45",
+  "environment_digest": "manual-reconstruction-spec-v1",
+  "supersedes_dataset_id": null,
+  "privacy_class": "PUBLIC",
+  "signatures": [
+    {
+      "method": "UNSIGNED_DESIGN_FIXTURE",
+      "status": "NOT_APPLICABLE",
+      "signer": null,
+      "artifact": null
+    }
+  ]
+}

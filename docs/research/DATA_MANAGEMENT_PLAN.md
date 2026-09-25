@@ -4,6 +4,8 @@
 
 Research data must support causal reconstruction, independent verification, legal reuse, and long-term interpretation without publishing credentials or account-identifying information.
 
+The normative field, clock, quality, hashing, signing, and privacy requirements are defined in the [Causal Research Data Contract](DATA_CONTRACT.md).
+
 ## Data Layers
 
 | Layer | Contents | Mutability | Public status |
