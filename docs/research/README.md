@@ -7,6 +7,7 @@ This directory is the normative entry point for scientific claims made by the Ev
 - Program maturity: design and governance.
 - Highest strategy evidence class: `E1` exploratory.
 - Confirmatory experiments registered: zero.
+- Confirmatory validator assigned: no; E2 promotion is blocked.
 - Proven strategy edges: zero.
 - Live-capital approval: outside scope.
 
@@ -16,6 +17,7 @@ These statements are intentionally conservative. Software tests, Demo deployment
 
 1. [Doctoral research program](DOCTORAL_RESEARCH_PROGRAM.md): contribution, questions, falsification, and work packages.
 2. [Research governance](RESEARCH_GOVERNANCE.md): evidence classes, roles, amendments, and claim rules.
+   - [GOV-001 ratification](decisions/GOV-001_RESEARCH_GOVERNANCE_RATIFICATION.md): institutional authority and independence constraints.
 3. [Scientific threat model](SCIENTIFIC_THREAT_MODEL.md): ways the research can produce a false conclusion.
 4. [Evidence gates](EVIDENCE_GATES.md): required evidence and failure consequences.
 5. [Experiment registry](EXPERIMENT_REGISTRY.md): complete inventory, including failures and null results.
