@@ -18,4 +18,4 @@ Numeric protection levels must come from a traceable stored intent. The AI selec
 
 - Code: switch to `v1.1.3-watcher-audit-report`.
 - Operational data: do not restore SQLite until current Binance positions and orders have been reviewed.
-- Backup: `D:\openclaw-backups\20260827-before-fixtrades-v2`.
+- A private operator backup was taken before this release.

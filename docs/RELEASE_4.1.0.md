@@ -53,4 +53,4 @@ The dashboard shows both UTC and ET (UTC-4 EDT / UTC-5 EST) so there is no ambig
 ## Rollback
 
 - Code: switch to `v4.0.0-shadow-top100-execution`.
-- Backup: `D:\openclaw-backups\20260829-before-v4.1.0-hour-performance`.
+- A private operator backup was taken before this release.

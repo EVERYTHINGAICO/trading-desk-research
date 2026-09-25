@@ -13,4 +13,4 @@ No strategy, score, entry level, position size, leverage, margin mode, protectio
 
 - Code: switch to `v2.0.0-fixtrades-auto`.
 - Operational data: review current Binance state before restoring SQLite.
-- Backup: `D:\openclaw-backups\20260827-before-balance-gate-v2.0.1`.
+- A private operator backup was taken before this release.

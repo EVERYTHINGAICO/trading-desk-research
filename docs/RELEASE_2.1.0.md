@@ -24,4 +24,4 @@ The strategy never writes core opportunities, core trade plans, Binance intents,
 ## Rollback
 
 - Code: switch to `v2.0.1-balance-gate`.
-- Backup: `D:\openclaw-backups\20260828-before-quality-stock-dip-shadow`.
+- A private operator backup was taken before this release.

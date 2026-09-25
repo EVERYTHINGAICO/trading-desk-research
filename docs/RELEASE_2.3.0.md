@@ -31,4 +31,4 @@
 ## Rollback
 
 - Code: switch to `v2.2.2-reconcile-watcher-adoption`.
-- Backup: `D:\openclaw-backups\20260829-before-v2.2.2-watcher` (covers both releases).
+- A private operator backup covering both releases was taken before this release.

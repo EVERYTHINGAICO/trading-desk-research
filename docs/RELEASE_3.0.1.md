@@ -38,4 +38,4 @@ left with a dangling entry limit.
 ## Rollback
 
 - Code: switch to `v3.0.0-restart-hierarchy`.
-- Backup: `D:\openclaw-backups\20260829-before-v3.0.1-orphan-orders`.
+- A private operator backup was taken before this release.

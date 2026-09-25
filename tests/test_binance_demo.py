@@ -28,6 +28,28 @@ class FakeClient:
         return payload
 
 
+def test_demo_endpoint_is_restricted_to_official_https_origins(monkeypatch):
+    from desk import binance_demo
+
+    for value in (
+        "file:///tmp/demo",
+        "http://demo-fapi.binance.com",
+        "https://demo-fapi.binance.com.attacker.example",
+        "https://api.binance.com",
+        "https://demo-fapi.binance.com/path",
+    ):
+        monkeypatch.setenv("BINANCE_DEMO_BASE_URL", value)
+        try:
+            binance_demo._base_url()
+        except binance_demo.DemoTradingError:
+            pass
+        else:
+            raise AssertionError(f"unsafe Demo endpoint accepted: {value}")
+
+    monkeypatch.setenv("BINANCE_DEMO_BASE_URL", "https://demo-fapi.binance.com/")
+    assert binance_demo._base_url() == "https://demo-fapi.binance.com"
+
+
 def test_place_only_missing_native_protection():
     client = FakeClient()
     orders = place_native_protections(

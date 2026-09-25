@@ -27,4 +27,4 @@ prioritize Top-100 winners first** (ordered by winner_rank), then the rest.
 
 - Code: switch to `v4.0.0-shadow-top100-execution`.
 - Backup: `/shadow-db/20260829-before-v5.0.0-top100-priority.db` (also mirrored under
-  `D:\openclaw-backups`), taken before this change.
+  private operator storage), taken before this change.

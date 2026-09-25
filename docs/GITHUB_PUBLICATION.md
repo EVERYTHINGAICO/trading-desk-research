@@ -52,7 +52,8 @@ Use the Everything AI Co logo and this short message:
 
 ## Publication Checklist
 
-- Publish only the clean, parentless `github-safe-main` branch as `main`.
+- Start public history from the clean, parentless `github-safe-main` root commit.
+- Make later public commits descendants of that clean public history; never merge or push private development history.
 - Do not push local development branches, tags, or historical commits.
 - Confirm `.env`, databases, runtime logs, journals, chats, account data, and personal agent files are absent.
 - Run the complete software test suite and record the exact result without implying strategy validation.

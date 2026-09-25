@@ -8,12 +8,13 @@ import time
 from dataclasses import dataclass
 from decimal import Decimal
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
 
 
 DEMO_BASE_URL = "https://demo-fapi.binance.com"
 REAL_BASE_URLS = {"https://fapi.binance.com", "https://api.binance.com"}
+ALLOWED_DEMO_HOSTS = {"demo-fapi.binance.com", "testnet.binancefuture.com"}
 
 
 class DemoTradingError(RuntimeError):
@@ -45,8 +46,20 @@ def enabled() -> bool:
 
 def _base_url() -> str:
     value = os.getenv("BINANCE_DEMO_BASE_URL", DEMO_BASE_URL).rstrip("/")
-    if value in REAL_BASE_URLS or "demo" not in value.lower() and "testnet" not in value.lower():
-        raise DemoTradingError("refusing Binance endpoint that is not explicitly Demo/Testnet")
+    parsed = urlparse(value)
+    valid_origin = (
+        parsed.scheme == "https"
+        and parsed.hostname in ALLOWED_DEMO_HOSTS
+        and parsed.port in {None, 443}
+        and not parsed.username
+        and not parsed.password
+        and parsed.path in {"", "/"}
+        and not parsed.params
+        and not parsed.query
+        and not parsed.fragment
+    )
+    if value in REAL_BASE_URLS or not valid_origin:
+        raise DemoTradingError("refusing endpoint outside the Binance Demo/Testnet HTTPS allowlist")
     return value
 
 

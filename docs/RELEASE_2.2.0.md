@@ -23,4 +23,4 @@ Rankings remain observational. Existing shadow results may contain repeated corr
 
 - Code: switch to `v2.1.1-fixtrades-deterministic-cron`.
 - Aggregate table and views are derived and can be dropped/rebuilt without changing source trades.
-- Backup: `D:\openclaw-backups\20260828-before-shadow-asset-performance`.
+- A private operator backup was taken before this release.

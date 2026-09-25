@@ -35,4 +35,4 @@
 ## Rollback
 
 - Code: switch to `v2.3.0-trading-desk-top100`.
-- Backup: `D:\openclaw-backups\20260829-before-v3.0.0-restart-hierarchy`.
+- A private operator backup was taken before this release.

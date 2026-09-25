@@ -1,5 +1,9 @@
 # Security Policy
 
+## Supported Versions
+
+Security updates are provided for the latest tagged prerelease only. Older alpha versions and untagged commits are unsupported.
+
 ## Reporting a Vulnerability
 
 Report suspected vulnerabilities privately to `developer@everythingaico.com`. Include the affected component, reproduction steps, expected impact, and any proposed mitigation. Do not open a public issue containing credentials, account details, exploitable endpoints, or other sensitive material.

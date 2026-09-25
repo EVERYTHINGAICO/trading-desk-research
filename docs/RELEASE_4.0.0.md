@@ -45,4 +45,4 @@ hourly with the ranking (`shadow_asset_top_100_winners`, 100 rows).
 ## Rollback
 
 - Code: switch to `v3.0.1-orphan-order-cleanup`.
-- Backup: `D:\openclaw-backups\20260829-before-v4.0.0-shadow-top100`.
+- A private operator backup was taken before this release.

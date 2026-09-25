@@ -47,7 +47,7 @@
 ## Rollback
 
 - Code: switch to `v2.2.0-shadow-asset-performance`.
-- Backup: `D:\openclaw-backups\20260829-before-v2.2.1-reconcile`
+- A private operator backup was taken before this release.
   (desk.db snapshot + docker-compose.yml).
 - Authority PDF SHA-256:
   `59c1a809144cb82a56898f38d18b1f7586c809fe02867027a9930a34dda567ef`.

@@ -24,4 +24,4 @@
 ## Rollback
 
 - Code: switch to `v2.2.1-reconcile-drain`.
-- Backup: `D:\openclaw-backups\20260829-before-v2.2.2-watcher`.
+- A private operator backup was taken before this release.

@@ -19,5 +19,5 @@ The dedicated service avoids blocking or changing the main runtime scheduler.
 
 - Remove/disable declaration `trading-desk:fixtrades-deterministic-v1`.
 - Code: switch to `v2.1.0-quality-stock-dip-shadow`.
-- Backup: `D:\openclaw-backups\20260828-before-fixtrades-deterministic-cron`.
+- A private operator backup was taken before this release.
 - Never restore SQLite without reconciling current Binance state.
