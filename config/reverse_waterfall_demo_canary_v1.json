@@ -1,0 +1,12 @@
+{
+  "version": "reverse-waterfall-demo-canary-v1",
+  "strategy_version": "reverse-waterfall-forward-v1",
+  "enabled": false,
+  "symbol": "BTCUSDT",
+  "max_open_positions": 1,
+  "notional_usdt": 25.0,
+  "leverage": 1,
+  "require_validation_pass": true,
+  "require_registry_state": "DEMO_APPROVED",
+  "live_execution": false
+}

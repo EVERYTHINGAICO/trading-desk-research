@@ -1,0 +1,19 @@
+{
+  "version": "pedro-ultra-v1",
+  "mode": "FORWARD_SHADOW",
+  "enabled": true,
+  "symbols": ["BTCUSDT", "ETHUSDT", "SOLUSDT"],
+  "interval": "1m",
+  "lookback": 20,
+  "fetch_limit": 100,
+  "volatility_range_multiple": 2.0,
+  "minimum_shock_return_pct": 0.25,
+  "reclaim_fraction": 0.6,
+  "stop_buffer_range_fraction": 0.05,
+  "take_profit_r": 1.5,
+  "max_hold_minutes": 10,
+  "quote_notional": 100.0,
+  "taker_fee_rate": 0.0005,
+  "entry_slippage_bps": 2.0,
+  "exit_slippage_bps": 2.0
+}

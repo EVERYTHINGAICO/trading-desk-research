@@ -1,0 +1,35 @@
+{
+  "version": "waterfall-forward-v2",
+  "mode": "FORWARD_SHADOW",
+  "enabled": true,
+  "btc_symbol": "BTCUSDT",
+  "vehicle_symbols": ["1000PEPEUSDT"],
+  "bar_interval": "1m",
+  "oi_max_age_ms": 360000,
+  "oi_lookback_ms": 300000,
+  "oi_prior_tolerance_ms": 60000,
+  "event_cluster_gap_ms": 900000,
+  "fees": {
+    "maker_rate": 0.0002,
+    "taker_rate": 0.0005,
+    "stop_slippage_bps": 5,
+    "entry_slippage_bps": 2
+  },
+  "thresholds": {
+    "btc_bearish_5m_return_pct": -0.35,
+    "btc_bearish_1m_return_pct": -0.25,
+    "vehicle_pulse_1m_return_pct": -0.60,
+    "downside_amplification": 2.0,
+    "relative_volume": 3.0,
+    "taker_buy_sell_bearish": 0.80,
+    "oi_confirmation_5m_pct": -0.50,
+    "limit_pullback_atr": 0.25
+  },
+  "variants": [
+    {"id": "TAKER_2R", "entry": "TAKER_IMMEDIATE", "tp_r": 2.0, "max_hold_minutes": 60, "requires_oi": false},
+    {"id": "TAKER_15R", "entry": "TAKER_IMMEDIATE", "tp_r": 1.5, "max_hold_minutes": 60, "requires_oi": false},
+    {"id": "LIMIT_2R", "entry": "LIMIT_THEN_TAKER", "tp_r": 2.0, "max_hold_minutes": 60, "requires_oi": false},
+    {"id": "PULLBACK_2R", "entry": "PULLBACK_ONLY", "tp_r": 2.0, "max_hold_minutes": 60, "requires_oi": false},
+    {"id": "CONSERVATIVE_2R", "entry": "TAKER_IMMEDIATE", "tp_r": 2.0, "max_hold_minutes": 60, "requires_oi": true}
+  ]
+}

@@ -1,0 +1,34 @@
+# Runtime state
+data/
+config/manual_risk_flags.json
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Editor/OS artifacts
+.DS_Store
+Thumbs.db
+.openclaw/
+
+# Local agent and personal workspace state
+.opencode/
+memory/
+DREAMS.md
+IDENTITY.md
+SOUL.md
+USER.md
+
+# Runtime databases and backups, wherever a local tool creates them
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+backups/

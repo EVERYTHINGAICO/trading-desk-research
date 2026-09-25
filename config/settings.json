@@ -1,0 +1,91 @@
+{
+  "timezone": "America/Tijuana",
+  "quote_asset": "USDT",
+  "symbols": ["*"],
+  "universe": {
+    "min_quote_volume": 1000000,
+    "trigger_monitor_max_symbols": 50,
+    "scan_workers": 8,
+    "scan_rate_limit_weights_per_second": 30
+  },
+  "interval": "15m",
+  "lookback_limit": 120,
+  "event_log_dir": "data/events",
+  "journal_dir": "data/journals",
+  "db_path": "data/desk.db",
+  "scanner": {
+    "min_quote_volume": 1000000,
+    "volume_spike_threshold": 1.8,
+    "drop_threshold_pct": -1.8,
+    "rebound_threshold_pct": 0.25,
+    "atr_stop_multiple": 1.2,
+    "tp1_r_multiple": 1.0,
+    "tp2_r_multiple": 1.75,
+    "primary_tp_r_multiple": 2.5
+  },
+  "shadow_evaluation": {
+    "round_trip_fee_rate": 0.001,
+    "minimum_closed_trades": 30,
+    "minimum_profit_factor": 1.15,
+    "train_fraction": 0.7
+  },
+  "long_v1": {
+    "strategy_version": "long-v1-costed-approved",
+    "max_open_positions": 35,
+    "capital_reserve_fraction": 0.5,
+    "max_signal_age_minutes": 30,
+    "max_hold_minutes": 240
+  },
+  "risk_gate": {
+    "manual_flags_path": "config/manual_risk_flags.json",
+    "max_range_atr_multiple": 2.5,
+    "max_abs_candle_change_pct": 4.5,
+    "max_quote_volume_multiple": 3.5,
+    "min_structural_trigger_count": 2
+  },
+  "scheduler": {
+    "scan_every_seconds": 3600,
+    "ai_review_queue_every_seconds": 3600,
+    "pre_ny_context_every_seconds": 3600,
+    "pre_ny_import_every_seconds": 60,
+    "quality_stock_dip_context_every_seconds": 3600,
+    "quality_stock_dip_import_every_seconds": 60,
+    "quality_stock_dip_resolve_every_seconds": 3600,
+    "trigger_monitor_every_seconds": 300,
+    "stateful_open_monitor_every_seconds": 300,
+    "resolve_every_seconds": 300,
+    "asset_performance_every_seconds": 3600,
+    "waterfall_forward_shadow_every_seconds": 15,
+    "waterfall_v2_forward_shadow_every_seconds": 15,
+    "reverse_waterfall_forward_shadow_every_seconds": 15,
+    "reverse_waterfall_report_every_seconds": 3600,
+    "reverse_waterfall_validation_every_seconds": 3600,
+    "nova_waterfall_v2_validation_every_seconds": 3600,
+    "waterfall_report_every_seconds": 3600,
+    "desk_agent_sync_every_seconds": 60,
+    "reymon_incident_detection_every_seconds": 300,
+    "lumen_freshness_every_seconds": 15,
+    "strategy_registry_sync_every_seconds": 3600,
+    "pedro_ultra_forward_shadow_every_seconds": 15,
+    "pete_panic_dip_every_seconds": 21600,
+    "demo_executor_every_seconds": 300,
+    "multi_strategy_demo_every_seconds": 60,
+    "demo_monitor_every_seconds": 15,
+    "demo_reconcile_every_seconds": 30,
+    "demo_history_sync_every_seconds": 900,
+    "demo_performance_report_every_seconds": 900,
+    "demo_manual_protection_every_seconds": 15,
+    "loop_sleep_seconds": 15,
+    "heartbeat_path": "data/scheduler_heartbeat.json",
+    "lock_path": "data/scheduler.lock",
+    "job_timeout_seconds": 900
+  },
+  "alerting": {
+    "cooldown_seconds": 900,
+    "alert_log_dir": "data/alerts"
+  },
+  "trigger_monitor": {
+    "recent_bars": 4,
+    "near_entry_atr_multiple": 0.35
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "environment": "BINANCE_DEMO",
+  "global_max_open_positions": 4,
+  "global_max_notional_usdt": 100.0,
+  "waterfall_variants": [
+    {"id": "TAKER_2R", "tp_r": 2.0},
+    {"id": "TAKER_15R", "tp_r": 1.5},
+    {"id": "LIMIT_2R", "tp_r": 2.0},
+    {"id": "PULLBACK_2R", "tp_r": 2.0},
+    {"id": "CONSERVATIVE_2R", "tp_r": 2.0}
+  ],
+  "strategies": {
+    "pedro-ultra": {"version": "pedro-ultra-demo-v2", "source_version": "pedro-ultra-v1", "enabled": true, "notional_usdt": 25.0, "max_open_positions": 1},
+    "waterfall-forward-v2": {"version": "waterfall-forward-v2-demo-v2", "source_version": "waterfall-forward-v2", "enabled": true, "notional_usdt": 25.0, "max_open_positions": 1},
+    "pete-panic-dip": {"version": "pete-panic-dip-demo-v2", "source_version": "pete-panic-dip-v1", "enabled": true, "notional_usdt": 25.0, "max_open_positions": 1, "stop_atr_multiple": 1.0, "take_profit_r": 1.5},
+    "reverse-waterfall": {"version": "reverse-waterfall-demo-v3", "source_version": "reverse-waterfall-forward-v1", "enabled": true, "notional_usdt": 25.0, "max_open_positions": 1, "require_validation_pass": true, "take_profit_r": 1.5, "demo_validation_override": {"authorized": true, "environment": "BINANCE_DEMO", "authorized_at": "2026-09-24", "reason": "Explicit user authorization to test the unvalidated strategy in Demo only"}}
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "version": "reverse-waterfall-forward-v1",
+  "strategy": "reverse_waterfall",
+  "mode": "FORWARD_SHADOW",
+  "enabled": true,
+  "symbol": "BTCUSDT",
+  "market": "USD-M-PERP",
+  "timeframes": {"trigger": "1m", "state": "5m"},
+  "history_bars": {"1m": 240, "5m": 120},
+  "freshness_seconds": {"clock": 10, "futures_1m": 90, "futures_5m": 420, "open_interest_5m": 420, "global_ls_5m": 420},
+  "indicators": {"ema_fast": 9, "ema_mid": 20, "ema_slow": 50, "atr_period": 14},
+  "thresholds": {
+    "prealert_return_1m_pct": 0.25,
+    "prealert_relative_volume": 2.0,
+    "taker_buy_ratio": 0.58,
+    "activation_score_min": 7,
+    "acceleration_score_min": 10,
+    "exhaustion_score_min": 3,
+    "exhaustion_confirmations": 2,
+    "prealert_timeout_minutes": 5,
+    "event_end_no_expansion_minutes": 10,
+    "cooldown_minutes": 10
+  },
+  "risk": {
+    "shadow_leg_notional_usd": 50.0,
+    "max_open_legs": 4,
+    "max_legs_per_event": 8,
+    "max_event_risk_usd": 4.0,
+    "max_daily_realized_loss_usd": 8.0,
+    "max_symbol_exposure_usd": 200.0,
+    "max_chase_atr": 1.5,
+    "stop_atr_multiple": 1.0,
+    "stop_spread_multiple": 2.0
+  },
+  "costs": {
+    "maker_rate": 0.0002,
+    "taker_rate": 0.0005,
+    "default_spread_bps": 1.0,
+    "entry_slippage_bps": 2.0,
+    "exit_slippage_bps": 2.0,
+    "stop_slippage_bps": 5.0,
+    "max_spread_bps": 10.0
+  },
+  "p1": {"spot_confirmation": true, "top_ratios": true, "mark_index_funding_premium": true},
+  "live_execution": false
+}

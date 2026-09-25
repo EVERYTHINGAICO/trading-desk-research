@@ -1,0 +1,27 @@
+{
+  "version": "pete-panic-dip-v1",
+  "mode": "FORWARD_SHADOW",
+  "enabled": true,
+  "symbols": ["BTCUSDT", "ETHUSDT"],
+  "interval": "1d",
+  "lookback": 400,
+  "minimum_history": 365,
+  "halving_date": "2024-04-20",
+  "atr_period": 14,
+  "drop_percentile_lookback": 365,
+  "candidate_score": 6,
+  "factors": {
+    "daily_return_pct_lte": {"threshold": -7.5, "points": 2},
+    "drawdown_30_pct_lte": {"threshold": -10.0, "points": 1},
+    "drawdown_90_pct_lte": {"threshold": -20.0, "points": 1},
+    "drawdown_365_pct_lte": {"threshold": -30.0, "points": 1},
+    "atr_relative_drop_gte": {"threshold": 2.0, "points": 2},
+    "drop_percentile_gte": {"threshold": 95.0, "points": 2}
+  },
+  "shadow_tranches": [
+    {"number": 1, "below_signal_pct": 0.0, "allocation_fraction": 0.34},
+    {"number": 2, "below_signal_pct": 5.0, "allocation_fraction": 0.33},
+    {"number": 3, "below_signal_pct": 10.0, "allocation_fraction": 0.33}
+  ],
+  "disclaimer": "Deterministic capitulation heuristic only; it does not identify or guarantee a cycle bottom."
+}
