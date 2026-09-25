@@ -63,11 +63,4 @@ Method selection, assumptions, thresholds, and the complete model universe must 
 
 ## Canonical References
 
-- Stanford University, *Doctoral Degrees, Dissertations & Dissertation Reading Committees*.
-- White (2000), *A Reality Check for Data Snooping*.
-- Bailey et al., *The Probability of Backtest Overfitting*.
-- Bailey and Lopez de Prado, *The Deflated Sharpe Ratio*.
-- Harvey, Liu, and Zhu (2016), *...and the Cross-Section of Expected Returns*.
-- Wilkinson et al. (2016), *The FAIR Guiding Principles for Scientific Data Management and Stewardship*.
-
-Full bibliographic records and persistent identifiers will be maintained in the future manuscript bibliography.
+The [research bibliography](BIBLIOGRAPHY.md) records the foundational doctoral-policy, reproducibility, data-snooping, multiple-testing, and backtest-overfitting sources with persistent links.
