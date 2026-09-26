@@ -1,0 +1,68 @@
+site_name: Everything AI Co Trading Desk Research
+site_description: Auditable algorithmic trading research with causal Shadow testing, Binance Futures Demo execution, attribution, protection, reconciliation, and doctoral-grade validation.
+site_url: https://everythingaico.github.io/trading-desk-research/
+repo_url: https://github.com/EVERYTHINGAICO/trading-desk-research
+repo_name: EVERYTHINGAICO/trading-desk-research
+docs_dir: website
+copyright: Copyright 2026 Everything AI Co. Apache-2.0 software; experimental strategies with no proven edge.
+
+theme:
+  name: material
+  custom_dir: website/overrides
+  language: en
+  icon:
+    logo: material/chart-timeline-variant
+    repo: fontawesome/brands/github
+  palette:
+    - scheme: default
+      primary: black
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - scheme: slate
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+nav:
+  - Overview: index.md
+  - Product:
+      - Capabilities: capabilities.md
+      - Binance Futures Demo: binance-futures-demo.md
+      - Error Handling and Resilience: error-handling-resilience.md
+      - Attribution and Reconciliation: attribution-reconciliation.md
+  - Research:
+      - Doctoral-Grade Method: doctoral-research.md
+      - Evidence Status: evidence-status.md
+  - Use:
+      - Troubleshooting: troubleshooting.md
+      - Glossary: glossary.md

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  {% if page and page.meta %}
+    <meta name="keywords" content="{{ page.meta.keywords or 'algorithmic trading research, Binance Futures Demo, Shadow trading, quantitative research' }}">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ page.meta.title or page.title }} | Everything AI Co">
+    <meta property="og:description" content="{{ page.meta.description or config.site_description }}">
+    <meta property="og:url" content="{{ page.meta.canonical or page.canonical_url }}">
+    <meta property="og:site_name" content="Everything AI Co Trading Desk Research">
+    <meta name="twitter:card" content="summary">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TechArticle",
+      "headline": {{ (page.meta.title or page.title) | tojson }},
+      "description": {{ (page.meta.description or config.site_description) | tojson }},
+      "url": {{ (page.meta.canonical or page.canonical_url) | tojson }},
+      "author": {"@type": "Organization", "name": "Everything AI Co", "url": "https://www.everythingaico.com/"},
+      "isPartOf": {
+        "@type": "SoftwareSourceCode",
+        "name": "Everything AI Co Trading Desk Research System",
+        "codeRepository": "https://github.com/EVERYTHINGAICO/trading-desk-research",
+        "programmingLanguage": "Python",
+        "license": "https://www.apache.org/licenses/LICENSE-2.0"
+      }
+    }
+    </script>
+  {% endif %}
+{% endblock %}
