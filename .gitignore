@@ -6,6 +6,7 @@ config/manual_risk_flags.json
 __pycache__/
 *.py[cod]
 .pytest_cache/
+site/
 
 # Local environment and secrets
 .env

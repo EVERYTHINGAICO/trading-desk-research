@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://everythingaico.github.io/trading-desk-research/sitemap.xml
