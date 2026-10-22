@@ -134,9 +134,9 @@ Explore the organization's public work at [github.com/EVERYTHINGAICO](https://gi
 
 Read the searchable [Trading Desk Research documentation](https://everythingaico.github.io/trading-desk-research/) for product capabilities, Binance Futures Demo safety, error handling, attribution, reconciliation, research evidence, and troubleshooting.
 
-## Resumen En Espanol
+## Research Summary
 
-Este repositorio publica un sistema experimental de investigacion de trading algoritmico. **Las estrategias todavia no tienen un edge probado ni han sido validadas con suficiente rigor.** El aporte es la infraestructura, el metodo de investigacion, la trazabilidad, las protecciones y la evidencia para evaluar estrategias de forma causal, sin look-ahead bias.
+This repository publishes an experimental algorithmic trading research system. **Its strategies do not yet have a proven edge and have not been validated with sufficient rigor.** Its contribution is the infrastructure, research method, traceability, protective controls, and evidence needed to evaluate strategies causally, without look-ahead bias.
 
 ## License, Versioning, And Use
 
